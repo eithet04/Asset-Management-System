@@ -17,8 +17,30 @@ use Illuminate\Notifications\Notifiable;
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
+    public const ROLE_ADMIN = 'admin';
+
+    public const ROLE_MANAGER = 'manager';
+
+    public const ROLE_EMPLOYEE = 'employee';
+
+    public const ROLES = [
+        self::ROLE_ADMIN,
+        self::ROLE_MANAGER,
+        self::ROLE_EMPLOYEE,
+    ];
+
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
+
+    public function dashboardRoute(): ?string
+    {
+        return match ($this->role?->slug) {
+            self::ROLE_ADMIN => 'admin.dashboard',
+            self::ROLE_MANAGER => 'manager.dashboard',
+            self::ROLE_EMPLOYEE => 'employee.dashboard',
+            default => null,
+        };
+    }
 
     public function role(): BelongsTo
     {
