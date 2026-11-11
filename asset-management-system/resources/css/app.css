@@ -201,6 +201,7 @@ h1 { margin-bottom: 7px; color: #18243a; font-size: clamp(22px, 2.1vw, 27px); fo
 .management-section { display: grid; gap: 16px; padding: 20px; border: 1px solid #e9edf3; border-radius: 9px; background: #fff; box-shadow: 0 3px 14px #1c2a4010; scroll-margin-top: 18px; }
 .management-section-heading h2 { margin: 0; color: #1b2840; font-size: 17px; }
 .management-section-heading p:not(.eyebrow) { margin: 6px 0 0; color: #8490a2; font-size: 11px; }
+.locations-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .management-create-form, .management-settings-form { display: grid; grid-template-columns: repeat(4, minmax(130px, 1fr)); align-items: end; gap: 12px; padding: 15px; border: 1px solid #edf0f5; border-radius: 7px; background: #f9fafc; }
 .management-settings-form { grid-template-columns: repeat(3, minmax(160px, 1fr)); }
 .management-description-field { grid-column: span 2; }
@@ -214,12 +215,15 @@ h1 { margin-bottom: 7px; color: #18243a; font-size: clamp(22px, 2.1vw, 27px); fo
 .management-table .button { min-height: 31px; padding: 0 9px; font-size: 9px; }
 .management-note { color: #8692a3; font-size: 9px; }
 .management-table form { display: contents; }
+.management-table form.location-edit-form { display: grid; }
+.management-table [data-location-edit-row][hidden] { display: none; }
 @media (max-width: 900px) {
     .management-create-form, .management-settings-form { grid-template-columns: repeat(2, minmax(130px, 1fr)); }
     .maintenance-create-form { grid-template-columns: repeat(2, minmax(130px, 1fr)); }
 }
 @media (max-width: 600px) {
     .management-section { padding: 13px; }
+    .locations-heading { align-items: flex-start; flex-direction: column; }
     .management-create-form, .management-settings-form, .maintenance-create-form { grid-template-columns: 1fr; }
     .management-description-field { grid-column: auto; }
 }
@@ -291,6 +295,15 @@ h1 { margin-bottom: 7px; color: #18243a; font-size: clamp(22px, 2.1vw, 27px); fo
 .auth-submit span { font-size: 15px; }
 .auth-switch { margin: 19px 0 0; color: #7d899a; text-align: center; font-size: 10px; }
 .auth-switch a { color: #2862df; font-weight: 600; }
+.auth-options { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.auth-options > a, .text-button { color: #2862df; font-size: 12px; font-weight: 600; }
+.auth-status { margin: 14px 0 0; padding: 10px 12px; color: #246548; border: 1px solid #ccebdc; border-radius: 7px; background: #effaf4; font-size: 12px; line-height: 1.5; }
+.otp-input { text-align: center; font-size: 22px !important; font-weight: 700 !important; letter-spacing: .45em; }
+.resend-form { margin-top: 16px; text-align: center; }
+.text-button { padding: 8px; border: 0; background: transparent; }
+.text-button:disabled { color: #8994a4; cursor: default; }
+.text-button[hidden], [data-status-field][hidden] { display: none; }
+.auth-submit:disabled { opacity: .6; cursor: not-allowed; }
 .auth-role-note { display: flex; align-items: center; gap: 7px; margin: 15px 0 0; padding: 9px 10px; color: #477a64; border-radius: 5px; background: #f0f8f3; font-size: 9px; }
 .auth-role-note span { color: #1a9b69; font-size: 12px; font-weight: 700; }
 .auth-footnote { margin: 0; color: #9aa4b2; text-align: center; font-size: 9px; }

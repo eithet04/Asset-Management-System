@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,9 +14,9 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'role_id', 'is_active'])]
+#[Fillable(['name', 'email', 'phone', 'password', 'role_id', 'is_active'])]
 #[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     public const ROLE_ADMIN = 'admin';
 
@@ -62,6 +63,16 @@ class User extends Authenticatable
         };
     }
 
+    public function requiresTwoFactorAuthentication(): bool
+    {
+        return ! in_array($this->role?->slug, [self::ROLE_ADMIN, self::ROLE_ASSET_CONTROLLER], true);
+    }
+
+    public function requiresEmailVerification(): bool
+    {
+        return $this->role?->slug !== self::ROLE_ADMIN;
+    }
+
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class);
@@ -85,6 +96,11 @@ class User extends Authenticatable
     public function assetRequests(): HasMany
     {
         return $this->hasMany(AssetRequest::class, 'requester_user_id');
+    }
+
+    public function loginOtpChallenges(): HasMany
+    {
+        return $this->hasMany(LoginOtpChallenge::class);
     }
 
     /**

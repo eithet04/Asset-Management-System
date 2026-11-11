@@ -4,15 +4,15 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#111a2b">
-    <title>My workspace · Assetflow</title>
+    <title>My workspace · Axora</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
     <div class="admin-shell">
         <aside class="sidebar" id="sidebar">
-            <a class="brand" href="{{ route('employee.dashboard') }}" aria-label="Assetflow employee home">
+            <a class="brand" href="{{ route('employee.dashboard') }}" aria-label="Axora employee home">
                 <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4.5 7.25 12 3l7.5 4.25v9.5L12 21l-7.5-4.25v-9.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="m4.8 7.4 7.2 4.1 7.2-4.1M12 11.6V21" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span>
-                <span class="brand-copy"><strong>Asset<span>flow</span></strong><small>SELF-SERVICE</small></span>
+                <span class="brand-copy"><strong>Ax<span>ora</span></strong><small>SELF-SERVICE</small></span>
             </a>
 
             <div class="sidebar-section-label">MY WORKSPACE</div>
@@ -142,7 +142,7 @@
                     <span><strong>Something not working?</strong><small>Report an issue with one of your assigned assets and your IT team will follow up.</small></span>
                     <button class="button button-secondary" type="button" data-open-employee-modal="issue">Report an issue</button>
                 </section>
-                <footer class="page-footer"><span>© 2025 Assetflow</span><span>Your workspace · Private to your account</span></footer>
+                <footer class="page-footer"><span>© {{ now()->year }} Axora</span><span>Your workspace · Private to your account</span></footer>
             </div>
         </main>
     </div>

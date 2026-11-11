@@ -6,6 +6,8 @@ use App\Models\User;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rules\Password;
 
 #[Signature('users:set-password {email}')]
 #[Description('Set a user password using hidden console prompts')]
@@ -23,8 +25,11 @@ class SetUserPassword extends Command
 
         $password = $this->secret('New password (minimum 12 characters)');
 
-        if ($password === null || strlen($password) < 12) {
-            $this->error('Password must be at least 12 characters.');
+        if ($password === null || Validator::make(
+            ['password' => $password],
+            ['password' => [Password::min(12)->mixedCase()->numbers()->symbols()]],
+        )->fails()) {
+            $this->error('Password must be at least 12 characters and include uppercase, lowercase, a number, and a symbol.');
 
             return self::INVALID;
         }

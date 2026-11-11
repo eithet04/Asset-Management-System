@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#111a2b">
-    <title>{{ $pageTitle }} · Assetflow</title>
+    <title>{{ $pageTitle }} · Axora</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
@@ -12,7 +12,7 @@
         <aside class="sidebar" id="sidebar">
             <a class="brand" href="{{ route('admin.dashboard') }}">
                 <span class="brand-mark" aria-hidden="true">▣</span>
-                <span class="brand-copy"><strong>Asset<span>flow</span></strong><small>CONTROL CENTER</small></span>
+                <span class="brand-copy"><strong>Ax<span>ora</span></strong><small>CONTROL CENTER</small></span>
             </a>
             <div class="sidebar-section-label">WORKSPACE</div>
             <nav class="main-nav" aria-label="Administration">
@@ -120,37 +120,53 @@
 
                 @if ($section === 'locations')
                 <section class="management-section" id="locations">
-                    <div class="management-section-heading"><div><p class="eyebrow">PLACES</p><h2>Locations</h2><p>Organize assets by branch, office, room or storage area.</p></div></div>
+                    <div class="management-section-heading locations-heading">
+                        <div><p class="eyebrow">PLACES</p><h2>Locations</h2><p>Organize assets by branch, office, room or storage area.</p></div>
+                        <a class="button button-secondary" href="{{ route('admin.branches') }}">Manage branches</a>
+                    </div>
                     <form class="management-create-form" method="POST" action="{{ route('admin.locations.store') }}">
                         @csrf
                         <label class="form-field">Name<input name="name" value="{{ old('name') }}" required maxlength="255" placeholder="e.g. Main office"></label>
                         <label class="form-field">Type<select name="location_type" required><option value="branch">Branch</option><option value="office" selected>Office</option><option value="room">Room</option><option value="storage">Storage</option><option value="other">Other</option></select></label>
-                        <label class="form-field">Branch<select name="branch_id"><option value="">No branch</option>@foreach ($branches as $branch)<option value="{{ $branch->id }}">{{ $branch->name }}</option>@endforeach</select></label>
+                        <label class="form-field">Branch<select name="branch_id"><option value="">No branch</option>@foreach ($branches->where('is_active', true) as $branch)<option value="{{ $branch->id }}">{{ $branch->name }}</option>@endforeach</select></label>
                         <button class="button button-primary" type="submit">Add location</button>
-                        <label class="form-field management-description-field">Description<input name="description" value="{{ old('description') }}" maxlength="5000"></label>
                     </form>
                     <div class="management-table-wrap">
                         <table class="management-table">
-                            <thead><tr><th>Name</th><th>Type</th><th>Branch</th><th>Description</th><th>Assets</th><th>Status</th><th>Actions</th></tr></thead>
+                            <thead><tr><th>Name</th><th>Type</th><th>Branch</th><th>Assets</th><th>Status</th><th>Actions</th></tr></thead>
                             <tbody>
                                 @forelse ($locations as $location)
                                     <tr>
-                                        <td><form id="location-{{ $location->id }}" method="POST" action="{{ route('admin.locations.update', $location) }}">@csrf @method('PUT')</form><input form="location-{{ $location->id }}" name="name" value="{{ $location->name }}" required maxlength="255" aria-label="Location name"></td>
-                                        <td><select form="location-{{ $location->id }}" name="location_type" aria-label="Location type">@foreach (['branch', 'office', 'room', 'storage', 'other'] as $type)<option value="{{ $type }}" @selected($location->location_type === $type)>{{ ucfirst($type) }}</option>@endforeach</select></td>
-                                        <td><select form="location-{{ $location->id }}" name="branch_id" aria-label="Branch"><option value="">None</option>@foreach ($branches as $branch)<option value="{{ $branch->id }}" @selected($location->branch_id === $branch->id)>{{ $branch->name }}</option>@endforeach</select></td>
-                                        <td><input form="location-{{ $location->id }}" name="description" value="{{ $location->description }}" maxlength="5000" aria-label="Description"></td>
+                                        <td>{{ $location->name }}</td>
+                                        <td>{{ ucfirst($location->location_type) }}</td>
+                                        <td>{{ $location->branch?->name ?? 'None' }}</td>
                                         <td>{{ $location->assets_count }}</td>
-                                        <td><select form="location-{{ $location->id }}" name="is_active" aria-label="Location status"><option value="1" @selected($location->is_active)>Active</option><option value="0" @selected(! $location->is_active)>Archived</option></select></td>
+                                        <td>{{ $location->is_active ? 'Active' : 'Archived' }}</td>
                                         <td>
-                                            <button class="button button-secondary" form="location-{{ $location->id }}" type="submit">Update</button>
+                                            <button class="button button-secondary" type="button" data-location-edit aria-expanded="false" aria-controls="location-edit-{{ $location->id }}">Update</button>
                                             <form method="POST" action="{{ route('admin.locations.destroy', $location) }}" onsubmit="return confirm('Delete this location from active use? Existing asset records will be retained.');">
                                                 @csrf @method('DELETE')
                                                 <button class="button button-secondary" type="submit">Delete</button>
                                             </form>
                                         </td>
                                     </tr>
+                                    <tr id="location-edit-{{ $location->id }}" data-location-edit-row hidden>
+                                        <td colspan="6">
+                                            <form class="management-create-form location-edit-form" method="POST" action="{{ route('admin.locations.update', $location) }}">
+                                                @csrf @method('PUT')
+                                                <label class="form-field">Name<input name="name" value="{{ $location->name }}" required maxlength="255"></label>
+                                                <label class="form-field">Type<select name="location_type" required>@foreach (['branch', 'office', 'room', 'storage', 'other'] as $type)<option value="{{ $type }}" @selected($location->location_type === $type)>{{ ucfirst($type) }}</option>@endforeach</select></label>
+                                                <label class="form-field">Branch<select name="branch_id"><option value="">No branch</option>@foreach ($branches as $branch)@if ($branch->is_active || $location->branch_id === $branch->id)<option value="{{ $branch->id }}" @selected($location->branch_id === $branch->id)>{{ $branch->name }}{{ $branch->is_active ? '' : ' (inactive)' }}</option>@endif @endforeach</select></label>
+                                                <label class="form-field">Status<select name="is_active" required><option value="1" @selected($location->is_active)>Active</option><option value="0" @selected(! $location->is_active)>Archived</option></select></label>
+                                                <div class="modal-actions">
+                                                    <button class="button button-secondary" type="button" data-location-edit-cancel>Cancel</button>
+                                                    <button class="button button-primary" type="submit">Save changes</button>
+                                                </div>
+                                            </form>
+                                        </td>
+                                    </tr>
                                 @empty
-                                    <tr><td colspan="7">No locations yet. Add one above.</td></tr>
+                                    <tr><td colspan="6">No locations yet. Add one above.</td></tr>
                                 @endforelse
                             </tbody>
                         </table>
@@ -239,12 +255,13 @@
                     <div class="management-section-heading"><div><p class="eyebrow">ACCESS CONTROL</p><h2>User roles</h2><p>Assign a role and department, then activate or deactivate each account. At least one active administrator must remain.</p></div></div>
                     <div class="management-table-wrap">
                         <table class="management-table">
-                            <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Department</th><th>Account</th><th>Actions</th></tr></thead>
+                            <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Role</th><th>Department</th><th>Account</th><th>Actions</th></tr></thead>
                             <tbody>
                                 @forelse ($users as $user)
                                     <tr>
                                         <td><form id="user-{{ $user->id }}" method="POST" action="{{ route('admin.users.update', $user) }}">@csrf @method('PUT')</form>{{ $user->name }} @if ($user->is(auth()->user()))<span class="management-note">(you)</span>@endif</td>
                                         <td>{{ $user->email }}</td>
+                                        <td><input form="user-{{ $user->id }}" name="phone" type="tel" value="{{ $user->phone }}" placeholder="+959..." aria-label="Myanmar phone number for {{ $user->name }}"></td>
                                         <td><select form="user-{{ $user->id }}" name="role_id" aria-label="Role for {{ $user->name }}">@foreach ($roles as $role)<option value="{{ $role->id }}" @selected($user->role_id === $role->id)>{{ $role->name }}</option>@endforeach</select></td>
                                         <td><select form="user-{{ $user->id }}" name="department_id" aria-label="Department for {{ $user->name }}"><option value="">Not assigned</option>@foreach ($departments as $department)<option value="{{ $department->id }}" @selected($user->employee?->department_id === $department->id)>{{ $department->name }}</option>@endforeach</select></td>
                                         <td><select form="user-{{ $user->id }}" name="is_active" aria-label="Account status for {{ $user->name }}"><option value="1" @selected($user->is_active)>Active</option><option value="0" @selected(! $user->is_active)>Inactive</option></select></td>
@@ -257,7 +274,7 @@
                                         </td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="6">No user accounts found.</td></tr>
+                                    <tr><td colspan="7">No user accounts found.</td></tr>
                                 @endforelse
                             </tbody>
                         </table>
@@ -322,7 +339,7 @@
                 </section>
                 @endif
 
-                <footer class="page-footer"><span>© {{ now()->year }} Assetflow</span><span>Administration</span></footer>
+                <footer class="page-footer"><span>© {{ now()->year }} Axora</span><span>Administration</span></footer>
             </div>
         </main>
     </div>

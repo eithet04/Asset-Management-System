@@ -4,17 +4,17 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#111a2b">
-    <title>Asset overview · Asset control</title>
+    <title>Asset overview · Axora</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
     <div class="admin-shell">
         <aside class="sidebar" id="sidebar">
-            <a class="brand" href="/" aria-label="Asset control home">
+            <a class="brand" href="/" aria-label="Axora home">
                 <span class="brand-mark" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="none"><path d="M4.5 7.25 12 3l7.5 4.25v9.5L12 21l-7.5-4.25v-9.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="m4.8 7.4 7.2 4.1 7.2-4.1M12 11.6V21" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
                 </span>
-                <span class="brand-copy"><strong>Asset<span>flow</span></strong><small>CONTROL CENTER</small></span>
+                <span class="brand-copy"><strong>Ax<span>ora</span></strong><small>CONTROL CENTER</small></span>
             </a>
 
             <div class="sidebar-section-label">WORKSPACE</div>
@@ -96,13 +96,12 @@
                 <section class="page-heading">
                     <div>
                         <p class="eyebrow">OVERVIEW</p>
-                        <h1>Good morning, {{ auth()->user()->name }} <span class="wave" aria-hidden="true">✦</span></h1>
+                        @php
+                            $hour = now('Asia/Yangon')->hour;
+                        @endphp
+                        <h1>Good {{ $hour < 12 ? 'morning' : ($hour < 18 ? 'afternoon' : 'evening') }}, {{ auth()->user()->name }}</h1>
                         <p class="page-subtitle">Here’s what’s happening with your assets today.</p>
                     </div>
-                    <button class="button button-primary" type="button" data-open-modal>
-                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
-                        Add new asset
-                    </button>
                 </section>
 
                 <section class="stats-grid" aria-label="Asset summary">
@@ -156,7 +155,10 @@
                 <section class="inventory-section" id="assets">
                     <div class="section-heading">
                         <div><h2>Asset registry</h2><p>A quick look at your recently updated assets.</p></div>
-                        <a class="text-link" href="#assets">View all assets <span aria-hidden="true">→</span></a>
+                        <button class="button button-primary" type="button" data-open-modal>
+                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+                            Add new asset
+                        </button>
                     </div>
                     <div class="inventory-card">
                         <form class="table-toolbar" method="GET" action="{{ route('admin.dashboard') }}">
@@ -211,7 +213,26 @@
                                                 @endif
                                             </td>
                                             <td><span class="status-badge {{ $statusClass }}"><span></span>{{ $statusLabel }}</span></td>
-                                            <td><span class="unassigned">—</span></td>
+                                            <td><button class="button button-secondary asset-edit-button" type="button"
+                                                data-edit-asset
+                                                data-id="{{ $asset->id }}"
+                                                data-name="{{ $asset->name }}"
+                                                data-category-id="{{ $asset->category_id }}"
+                                                data-category-name="{{ $asset->category->name }}"
+                                                data-category-active="{{ $asset->category->is_active ? 'true' : 'false' }}"
+                                                data-location-id="{{ $asset->location_id }}"
+                                                data-location-name="{{ $asset->location?->name }}"
+                                                data-location-active="{{ $asset->location?->is_active ? 'true' : 'false' }}"
+                                                data-asset-code="{{ $asset->asset_code }}"
+                                                data-serial-number="{{ $asset->serial_number }}"
+                                                data-brand="{{ $asset->brand }}"
+                                                data-model="{{ $asset->model }}"
+                                                data-purchase-date="{{ $asset->purchase_date?->format('Y-m-d') }}"
+                                                data-purchase-cost="{{ $asset->purchase_cost }}"
+                                                data-warranty-expiry-date="{{ $asset->warranty_expiry_date?->format('Y-m-d') }}"
+                                                data-condition="{{ $asset->condition }}"
+                                                data-status="{{ $asset->status }}"
+                                                data-description="{{ $asset->description }}">Edit</button></td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -221,17 +242,19 @@
                         <footer class="table-footer"><span>Showing <strong id="visible-count">{{ $assets->count() }}</strong> of <strong id="total-count">{{ $assets->total() }}</strong> matching assets</span>{{ $assets->links() }}</footer>
                     </div>
                 </section>
-                <footer class="page-footer"><span>© 2026 Assetflow</span><span>Asset control made simple.</span></footer>
+                <footer class="page-footer"><span>© {{ now()->year }} Axora</span><span>Asset control made simple.</span></footer>
             </div>
         </main>
     </div>
 
-    <div class="modal-backdrop" id="asset-modal" @if ($errors->any()) @else hidden @endif>
+    <div class="modal-backdrop" id="asset-modal" data-update-url="{{ route('admin.assets.update', ['asset' => '__ASSET__']) }}" @if ($errors->any()) @else hidden @endif>
         <section class="asset-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
             <div class="modal-heading"><div><p class="eyebrow">ASSET REGISTRY</p><h2 id="modal-title">Add a new asset</h2></div><button class="icon-button modal-close" type="button" aria-label="Close dialog" data-close-modal>×</button></div>
-            <p class="modal-description">Enter the details below to add an item to your registry.</p>
-            <form id="asset-form" method="POST" action="{{ route('admin.assets.store') }}">
+            <p class="modal-description" data-modal-description>Enter the details below to add an item to your registry.</p>
+            <form id="asset-form" method="POST" action="{{ route('admin.assets.store') }}" data-create-url="{{ route('admin.assets.store') }}">
                 @csrf
+                <input type="hidden" name="_method" value="PUT" data-edit-method @if (old('_method') !== 'PUT') disabled @endif>
+                <input type="hidden" name="asset_id" value="{{ old('asset_id') }}" data-edit-id>
                 <label class="form-field">Asset name<input name="name" value="{{ old('name') }}" required maxlength="255" placeholder="e.g. MacBook Pro 16"></label>
                 @error('name')<p class="form-error">{{ $message }}</p>@enderror
                 <div class="form-row">
@@ -253,13 +276,14 @@
                     <label class="form-field">Condition<select name="condition" required><option value="good" @selected(old('condition', 'good') === 'good')>Good</option><option value="fair" @selected(old('condition') === 'fair')>Fair</option><option value="poor" @selected(old('condition') === 'poor')>Poor</option></select></label>
                 </div>
                 <div class="form-row">
-                    <label class="form-field">Status<select name="status" required><option value="available" @selected(old('status', 'available') === 'available')>Available</option><option value="under_maintenance" @selected(old('status') === 'under_maintenance')>Under maintenance</option><option value="damaged" @selected(old('status') === 'damaged')>Damaged</option><option value="disposed" @selected(old('status') === 'disposed')>Disposed</option></select></label>
+                    <label class="form-field" data-status-field>Status<select name="status" required><option value="available" @selected(old('status', 'available') === 'available')>Available</option><option value="assigned" disabled>Assigned</option><option value="under_maintenance" @selected(old('status') === 'under_maintenance')>Under maintenance</option><option value="damaged" @selected(old('status') === 'damaged')>Damaged</option><option value="disposed" @selected(old('status') === 'disposed')>Disposed</option></select></label>
                     <label class="form-field">Description<input name="description" value="{{ old('description') }}" maxlength="5000"></label>
                 </div>
+                <p class="modal-description" data-status-note hidden>Asset status is managed in the Status &amp; condition section to preserve assignment and maintenance records.</p>
                 @foreach (['purchase_date', 'purchase_cost', 'warranty_expiry_date', 'condition', 'status', 'description'] as $field)
                     @error($field)<p class="form-error">{{ $message }}</p>@enderror
                 @endforeach
-                <div class="modal-actions"><button class="button button-secondary" type="button" data-close-modal>Cancel</button><button class="button button-primary" type="submit">Add asset</button></div>
+                <div class="modal-actions"><button class="button button-secondary" type="button" data-close-modal>Cancel</button><button class="button button-primary" type="submit" data-submit-label>Add asset</button></div>
             </form>
         </section>
     </div>

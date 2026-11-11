@@ -4,28 +4,56 @@ use App\Http\Controllers\Admin\AssetController;
 use App\Http\Controllers\Admin\ManagementController;
 use App\Http\Controllers\AssetOperationsController;
 use App\Http\Controllers\Auth\AuthenticationController;
+use App\Http\Controllers\Auth\EmailVerificationController;
+use App\Http\Controllers\Auth\OtpVerificationController;
+use App\Http\Controllers\Auth\PasswordResetController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [AuthenticationController::class, 'dashboard'])->name('home');
 
+Route::get('/email/verify', [EmailVerificationController::class, 'notice'])->name('verification.notice');
+Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
+    ->middleware('signed')
+    ->name('verification.verify');
+Route::post('/email/verification-notification', [EmailVerificationController::class, 'resend'])
+    ->middleware('throttle:verification-email')
+    ->name('verification.send');
+
+Route::get('/login/verify', [OtpVerificationController::class, 'show'])->name('otp.show');
+Route::post('/login/verify', [OtpVerificationController::class, 'verify'])
+    ->middleware('throttle:otp-verify')
+    ->name('otp.verify');
+Route::post('/login/verify/resend', [OtpVerificationController::class, 'resend'])
+    ->middleware('throttle:otp-resend')
+    ->name('otp.resend');
+
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [AuthenticationController::class, 'createLogin'])->name('login');
     Route::post('/login', [AuthenticationController::class, 'storeLogin'])
-        ->middleware('throttle:5,1')
+        ->middleware('throttle:login')
         ->name('login.store');
     Route::get('/register', [AuthenticationController::class, 'createRegistration'])->name('register');
     Route::post('/register', [AuthenticationController::class, 'storeRegistration'])
-        ->middleware('throttle:5,1')
+        ->middleware('throttle:register')
         ->name('register.store');
+    Route::get('/forgot-password', [PasswordResetController::class, 'requestForm'])->name('password.request');
+    Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink'])
+        ->middleware('throttle:password-reset')
+        ->name('password.email');
+    Route::get('/reset-password/{token}', [PasswordResetController::class, 'resetForm'])->name('password.reset');
+    Route::post('/reset-password', [PasswordResetController::class, 'reset'])
+        ->middleware('throttle:password-reset')
+        ->name('password.update');
 });
 
 Route::post('/logout', [AuthenticationController::class, 'destroy'])
     ->middleware('auth')
     ->name('logout');
 
-Route::middleware(['auth', 'role:admin'])->group(function (): void {
+Route::middleware(['auth', 'two_factor', 'role:admin'])->group(function (): void {
     Route::get('/admin', [AssetController::class, 'index'])->name('admin.dashboard');
     Route::post('/admin/assets', [AssetController::class, 'store'])->name('admin.assets.store');
+    Route::put('/admin/assets/{asset}', [AssetController::class, 'update'])->name('admin.assets.update');
     Route::get('/admin/management', fn () => to_route('admin.categories'))->name('admin.management');
     Route::get('/admin/categories', [ManagementController::class, 'index'])
         ->defaults('section', 'categories')
@@ -68,12 +96,12 @@ Route::middleware(['auth', 'role:admin'])->group(function (): void {
     Route::put('/admin/settings', [ManagementController::class, 'updateSettings'])->name('admin.settings.update');
 });
 
-Route::middleware(['auth', 'role:manager,asset_controller,department_manager'])->group(function (): void {
+Route::middleware(['auth', 'two_factor', 'role:manager,asset_controller,department_manager'])->group(function (): void {
     Route::get('/manager', [AssetOperationsController::class, 'index'])
         ->defaults('section', 'assignments')->name('manager.dashboard');
 });
 
-Route::middleware(['auth', 'role:employee'])->group(function (): void {
+Route::middleware(['auth', 'two_factor', 'role:employee'])->group(function (): void {
     Route::get('/employee', [AssetOperationsController::class, 'employeeDashboard'])->name('employee.dashboard');
     Route::get('/employee/asset-requests', [AssetOperationsController::class, 'index'])
         ->defaults('section', 'my-requests')->name('employee.requests');
@@ -93,7 +121,7 @@ Route::middleware(['auth', 'role:employee'])->group(function (): void {
         ->name('employee.notifications.read-all');
 });
 
-Route::middleware(['auth', 'role:admin,manager,asset_controller,department_manager,it_technician,hr_admin_staff,management_viewer'])->prefix('operations')->name('operations.')->group(function (): void {
+Route::middleware(['auth', 'two_factor', 'role:admin,manager,asset_controller,department_manager,it_technician,hr_admin_staff,management_viewer'])->prefix('operations')->name('operations.')->group(function (): void {
     foreach (['assignments', 'returns', 'transfers', 'status', 'history', 'reports', 'requests', 'purchases', 'warranties', 'verification', 'disposals', 'notifications', 'maintenance', 'people'] as $section) {
         Route::get("/{$section}", [AssetOperationsController::class, 'index'])
             ->defaults('section', $section)->name($section);

@@ -16,6 +16,7 @@ use App\Models\MaintenanceRecord;
 use App\Models\Role;
 use App\Models\User;
 use App\Notifications\AssetOperationNotification;
+use App\Support\MyanmarPhoneNumber;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -46,8 +47,8 @@ class ManagementController extends Controller
                 'categories' => Category::query()->withCount('assets')->orderBy('name')->get(),
             ],
             'locations' => [
-                'locations' => Location::query()->withCount('assets')->orderBy('name')->get(),
-                'branches' => Branch::query()->where('is_active', true)->orderBy('name')->get(),
+                'locations' => Location::query()->with('branch')->withCount('assets')->orderBy('name')->get(),
+                'branches' => Branch::query()->orderBy('name')->get(),
             ],
             'branches' => [
                 'branches' => Branch::query()->withCount(['locations', 'employees'])->orderBy('name')->get(),
@@ -132,7 +133,6 @@ class ManagementController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'location_type' => ['required', Rule::in(['branch', 'office', 'room', 'storage', 'other'])],
             'branch_id' => ['nullable', Rule::exists('branches', 'id')->where('is_active', true)],
-            'description' => ['nullable', 'string', 'max:5000'],
         ]);
 
         Location::query()->create($validated);
@@ -145,8 +145,12 @@ class ManagementController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'location_type' => ['required', Rule::in(['branch', 'office', 'room', 'storage', 'other'])],
-            'branch_id' => ['nullable', Rule::exists('branches', 'id')->where('is_active', true)],
-            'description' => ['nullable', 'string', 'max:5000'],
+            'branch_id' => [
+                'nullable',
+                Rule::exists('branches', 'id')->where(function ($query) use ($location): void {
+                    $query->where('is_active', true)->orWhere('id', $location->branch_id);
+                }),
+            ],
             'is_active' => ['required', 'boolean'],
         ]);
 
@@ -252,17 +256,27 @@ class ManagementController extends Controller
 
     public function updateUser(Request $request, User $user): RedirectResponse
     {
+        $phoneProvided = $request->exists('phone');
+        $phone = trim((string) $request->input('phone', ''));
+        $request->merge([
+            'phone' => $phone === '' ? null : (MyanmarPhoneNumber::normalize($phone) ?? $phone),
+        ]);
         $validated = $request->validate([
             'role_id' => ['required', 'exists:roles,id'],
             'is_active' => ['required', 'boolean'],
             'department_id' => ['nullable', 'exists:departments,id'],
+            'phone' => [
+                'nullable',
+                'regex:/^\+959[2-9]\d{6,8}$/',
+                Rule::unique('users', 'phone')->ignore($user->id),
+            ],
         ]);
 
         if ($user->is($request->user()) && (! (bool) $validated['is_active'] || $user->role_id != $validated['role_id'])) {
             return $this->backTo('users', 'You cannot deactivate your own account or change your own role.');
         }
 
-        DB::transaction(function () use ($validated, $user): void {
+        DB::transaction(function () use ($validated, $user, $phoneProvided): void {
             $user = User::query()->lockForUpdate()->findOrFail($user->id);
             $wasActiveAdmin = $user->is_active && $user->role?->slug === User::ROLE_ADMIN;
             $willBeActiveAdmin = (bool) $validated['is_active']
@@ -278,14 +292,25 @@ class ManagementController extends Controller
                 abort_if($activeAdmins <= 1, 422, 'At least one active administrator account must remain.');
             }
 
-            $user->update([
+            $userFields = [
                 'role_id' => $validated['role_id'],
                 'is_active' => $validated['is_active'],
-            ]);
+            ];
+            if ($phoneProvided) {
+                $userFields['phone'] = $validated['phone'] ?? null;
+            }
+            $user->update($userFields);
             if ($willHaveEmployeeProfile) {
                 $profile = Employee::createForUser($user);
+                $profileFields = [];
                 if (array_key_exists('department_id', $validated)) {
-                    $profile->update(['department_id' => $validated['department_id']]);
+                    $profileFields['department_id'] = $validated['department_id'];
+                }
+                if ($phoneProvided) {
+                    $profileFields['phone'] = $validated['phone'] ?? null;
+                }
+                if ($profileFields !== []) {
+                    $profile->update($profileFields);
                 }
             }
         });

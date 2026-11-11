@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#111a2b">
-    <title>{{ $pageTitle }} · Assetflow</title>
+    <title>{{ $pageTitle }} · Axora</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
@@ -12,7 +12,7 @@
         <aside class="sidebar" id="sidebar">
             <a class="brand" href="{{ route(auth()->user()->dashboardRoute() ?? 'login') }}">
                 <span class="brand-mark" aria-hidden="true">▣</span>
-                <span class="brand-copy"><strong>Asset<span>flow</span></strong><small>CONTROL CENTER</small></span>
+                <span class="brand-copy"><strong>Ax<span>ora</span></strong><small>CONTROL CENTER</small></span>
             </a>
             <nav class="main-nav" aria-label="Main navigation">
                 @if (auth()->user()->role?->slug === 'admin')

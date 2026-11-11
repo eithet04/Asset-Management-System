@@ -8,6 +8,8 @@ use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rules\Password;
 
 #[Signature('users:create-admin {email : Email address for the administrator account}')]
 #[Description('Create an administrator account using hidden password prompts')]
@@ -17,8 +19,8 @@ class CreateAdminUser extends Command
     {
         $email = strtolower(trim((string) $this->argument('email')));
 
-        if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
-            $this->error('Enter a valid email address.');
+        if (filter_var($email, FILTER_VALIDATE_EMAIL) === false || ! str_ends_with($email, '@gmail.com')) {
+            $this->error('Enter a valid Gmail address.');
 
             return self::INVALID;
         }
@@ -39,8 +41,11 @@ class CreateAdminUser extends Command
 
         $password = $this->secret('Password (minimum 12 characters)');
 
-        if ($password === null || strlen($password) < 12) {
-            $this->error('Password must be at least 12 characters.');
+        if ($password === null || Validator::make(
+            ['password' => $password],
+            ['password' => [Password::min(12)->mixedCase()->numbers()->symbols()]],
+        )->fails()) {
+            $this->error('Password must be at least 12 characters and include uppercase, lowercase, a number, and a symbol.');
 
             return self::INVALID;
         }

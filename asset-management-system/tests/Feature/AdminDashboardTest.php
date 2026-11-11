@@ -29,6 +29,22 @@ class AdminDashboardTest extends TestCase
         $response->assertSeeText('MANAGE');
     }
 
+    public function test_dashboard_greeting_uses_yangon_local_time(): void
+    {
+        $admin = $this->createUserWithRole(User::ROLE_ADMIN);
+
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-11 02:00:00', 'UTC'));
+        $this->actingAs($admin)->get(route('admin.dashboard'))->assertSeeText('Good morning, '.$admin->name);
+
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-11 06:00:00', 'UTC'));
+        $this->actingAs($admin)->get(route('admin.dashboard'))->assertSeeText('Good afternoon, '.$admin->name);
+
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-11 12:00:00', 'UTC'));
+        $this->actingAs($admin)->get(route('admin.dashboard'))->assertSeeText('Good evening, '.$admin->name);
+
+        $this->travelBack();
+    }
+
     public function test_admin_is_forbidden_from_the_manager_dashboard(): void
     {
         $admin = $this->createUserWithRole(User::ROLE_ADMIN);
@@ -72,6 +88,7 @@ class AdminDashboardTest extends TestCase
 
         $response->assertOk()
             ->assertSeeText('Total Assets')
+            ->assertSeeText('Add new asset')
             ->assertSeeText('Available Assets')
             ->assertSeeText('Assigned Assets')
             ->assertSeeText('Under Maintenance')
@@ -157,6 +174,73 @@ class AdminDashboardTest extends TestCase
             ->from(route('admin.dashboard'))
             ->post(route('admin.assets.store'), $payload)
             ->assertSessionHasErrors('asset_code');
+    }
+
+    public function test_admin_can_update_asset_details_from_the_dashboard(): void
+    {
+        $admin = $this->createUserWithRole(User::ROLE_ADMIN);
+        $category = Category::query()->create([
+            'code' => 'LAPTOP',
+            'name' => 'Laptop',
+        ]);
+        $asset = Asset::query()->create([
+            'category_id' => $category->id,
+            'asset_code' => 'AST-UPDATE-1',
+            'name' => 'Old laptop name',
+            'condition' => 'good',
+            'status' => 'available',
+        ]);
+
+        $this->actingAs($admin)
+            ->put(route('admin.assets.update', $asset), [
+                'asset_id' => $asset->id,
+                'asset_code' => 'AST-UPDATE-1',
+                'name' => 'Updated laptop name',
+                'category_id' => $category->id,
+                'condition' => 'fair',
+                'description' => 'Updated from the dashboard.',
+            ])
+            ->assertRedirect(route('admin.dashboard'))
+            ->assertSessionHas('status', 'Asset details updated.');
+
+        $this->assertDatabaseHas('assets', [
+            'id' => $asset->id,
+            'name' => 'Updated laptop name',
+            'condition' => 'fair',
+            'description' => 'Updated from the dashboard.',
+            'updated_by' => $admin->id,
+        ]);
+        $this->assertDatabaseHas('asset_activities', [
+            'asset_id' => $asset->id,
+            'user_id' => $admin->id,
+            'action_type' => 'updated',
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.dashboard'))
+            ->assertOk()
+            ->assertSee('data-edit-asset', false)
+            ->assertSeeText('Edit');
+    }
+
+    public function test_non_admin_cannot_update_an_asset(): void
+    {
+        $employee = $this->createUserWithRole(User::ROLE_EMPLOYEE);
+        $category = Category::query()->create([
+            'code' => 'LAPTOP',
+            'name' => 'Laptop',
+        ]);
+        $asset = Asset::query()->create([
+            'category_id' => $category->id,
+            'asset_code' => 'AST-UPDATE-2',
+            'name' => 'Office laptop',
+            'condition' => 'good',
+            'status' => 'available',
+        ]);
+
+        $this->actingAs($employee)
+            ->put(route('admin.assets.update', $asset))
+            ->assertForbidden();
     }
 
     public function test_non_admin_cannot_register_an_asset(): void

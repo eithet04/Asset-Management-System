@@ -4,14 +4,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#111a2b">
-    <title>Sign in · Assetflow</title>
+    <title>Sign in · Axora</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="auth-page">
     <main class="auth-shell">
-        <a class="brand auth-brand" href="{{ route('login') }}" aria-label="Assetflow sign in">
+        <a class="brand auth-brand" href="{{ route('login') }}" aria-label="Axora sign in">
             <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4.5 7.25 12 3l7.5 4.25v9.5L12 21l-7.5-4.25v-9.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="m4.8 7.4 7.2 4.1 7.2-4.1M12 11.6V21" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span>
-            <span class="brand-copy"><strong>Asset<span>flow</span></strong><small>CONTROL CENTER</small></span>
+            <span class="brand-copy"><strong>Ax<span>ora</span></strong><small>CONTROL CENTER</small></span>
         </a>
         <section class="auth-card">
             <p class="eyebrow">WELCOME BACK</p>
@@ -19,9 +19,9 @@
             <p class="auth-subtitle">Your assets and requests, all in one place.</p>
             <form class="auth-form" method="POST" action="{{ route('login.store') }}">
                 @csrf
-                <label class="form-field">Work email
-                    <input type="email" name="email" value="{{ old('email') }}" autocomplete="username" required autofocus placeholder="you@company.com">
-                    @error('email')<span class="field-error">{{ $message }}</span>@enderror
+                <label class="form-field">Gmail address or Mobile Number
+                    <input type="text" name="identifier" value="{{ old('identifier') }}" autocomplete="username" required autofocus placeholder="you@gmail.com or 09...">
+                    @error('identifier')<span class="field-error">{{ $message }}</span>@enderror
                 </label>
                 <label class="form-field">Password
                     <span class="password-input-wrap">
@@ -33,10 +33,14 @@
                     </span>
                     @error('password')<span class="field-error">{{ $message }}</span>@enderror
                 </label>
-                <label class="remember-field"><input type="checkbox" name="remember" value="1"> <span>Keep me signed in</span></label>
+                <div class="auth-options">
+                    <label class="remember-field"><input type="checkbox" name="remember" value="1"> <span>Keep me signed in</span></label>
+                    <a href="{{ route('password.request') }}">Forgot password?</a>
+                </div>
                 <button class="button button-primary auth-submit" type="submit">Sign in <span aria-hidden="true">→</span></button>
             </form>
-            <p class="auth-switch">New to Assetflow? <a href="{{ route('register') }}">Create an employee account</a></p>
+            @if (session('status'))<p class="auth-status" role="status">{{ session('status') }}</p>@endif
+            <p class="auth-switch">New to Axora? <a href="{{ route('register') }}">Create an employee account</a></p>
         </section>
         <p class="auth-footnote">Secure access to your organization's asset workspace.</p>
     </main>

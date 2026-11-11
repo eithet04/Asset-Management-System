@@ -5,6 +5,7 @@ const emptyState = document.querySelector('#empty-state');
 const visibleCount = document.querySelector('#visible-count');
 const totalCount = document.querySelector('#total-count');
 const modal = document.querySelector('#asset-modal');
+const assetForm = document.querySelector('#asset-form');
 const toast = document.querySelector('#toast');
 const assignmentSearch = document.querySelector('#assignment-search');
 const assignmentFilter = document.querySelector('#assignment-filter');
@@ -21,6 +22,7 @@ const employeeVisibleCount = document.querySelector('#employee-visible-count');
 const employeeRequestCount = document.querySelector('#employee-request-count');
 const employeeAssetModal = document.querySelector('#employee-asset-modal');
 const employeeIssueModal = document.querySelector('#employee-issue-modal');
+const resendForm = document.querySelector('[data-resend-form]');
 
 document.querySelectorAll('[data-password-toggle]').forEach((button) => {
     button.addEventListener('click', () => {
@@ -34,6 +36,23 @@ document.querySelectorAll('[data-password-toggle]').forEach((button) => {
         button.querySelector('[data-eye-closed]').hidden = isVisible;
     });
 });
+
+if (resendForm) {
+    let remaining = Number(resendForm.dataset.cooldown);
+    const button = resendForm.querySelector('[data-resend-button]');
+    const countdown = resendForm.querySelector('[data-countdown]');
+    button.disabled = remaining > 0;
+    const timer = window.setInterval(() => {
+        remaining -= 1;
+        if (remaining <= 0) {
+            button.disabled = false;
+            countdown.hidden = true;
+            window.clearInterval(timer);
+            return;
+        }
+        countdown.textContent = ` (${remaining}s)`;
+    }, 1000);
+}
 
 function filterAssets() {
     if (!tableBody) return;
@@ -67,17 +86,104 @@ function closeModal() {
     modal.hidden = true;
 }
 
+function openAssetEditor(button) {
+    const editing = Boolean(button);
+    const method = assetForm.elements.namedItem('_method');
+    const assetId = assetForm.elements.namedItem('asset_id');
+
+    assetForm.querySelectorAll('option[data-edit-option]').forEach((option) => option.remove());
+    assetForm.reset();
+    assetForm.action = editing
+        ? modal.dataset.updateUrl.replace('__ASSET__', button.dataset.id)
+        : assetForm.dataset.createUrl;
+    method.disabled = !editing;
+    assetId.value = editing ? button.dataset.id : '';
+    document.querySelector('#modal-title').textContent = editing ? 'Update asset details' : 'Add a new asset';
+    document.querySelector('[data-modal-description]').textContent = editing
+        ? 'Update the asset information below. To change its status, use the Status & condition section.'
+        : 'Enter the details below to add an item to your registry.';
+    document.querySelector('[data-submit-label]').textContent = editing ? 'Save changes' : 'Add asset';
+    document.querySelector('[data-status-note]').hidden = !editing;
+    document.querySelector('[data-status-field]').hidden = editing;
+
+    if (editing) {
+        ['category', 'location'].forEach((fieldName) => {
+            const id = button.dataset[`${fieldName}Id`];
+            const select = assetForm.elements.namedItem(`${fieldName}_id`);
+            if (id && !select.querySelector(`option[value="${CSS.escape(id)}"]`)) {
+                const option = new Option(
+                    `${button.dataset[`${fieldName}Name`]}${button.dataset[`${fieldName}Active`] === 'true' ? '' : ' (inactive)'}`,
+                    id,
+                    true,
+                    true,
+                );
+                option.dataset.editOption = 'true';
+                select.add(option);
+            }
+        });
+        Object.entries(button.dataset).forEach(([key, value]) => {
+            const fieldName = key.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
+            const field = assetForm.elements.namedItem(fieldName);
+            if (field && key !== 'id') field.value = value;
+        });
+        assetForm.elements.namedItem('_method').disabled = false;
+    } else {
+        document.querySelector('[data-status-field]').hidden = false;
+    }
+
+    modal.hidden = false;
+    assetForm.querySelector('input[name="name"]')?.focus();
+}
+
+if (assetForm && !assetForm.elements.namedItem('_method').disabled) {
+    const assetId = assetForm.elements.namedItem('asset_id').value;
+    assetForm.action = modal.dataset.updateUrl.replace('__ASSET__', assetId);
+    document.querySelector('[data-status-field]').hidden = true;
+    document.querySelector('#modal-title').textContent = 'Update asset details';
+    document.querySelector('[data-modal-description]').textContent =
+        'Update the asset information below. To change its status, use the Status & condition section.';
+    document.querySelector('[data-submit-label]').textContent = 'Save changes';
+    document.querySelector('[data-status-note]').hidden = false;
+}
+
 searchInput?.addEventListener('input', filterAssets);
 statusFilter?.addEventListener('change', filterAssets);
 
 document.querySelectorAll('[data-open-modal]').forEach((button) => {
     button.addEventListener('click', () => {
-        modal.hidden = false;
-        modal.querySelector('input')?.focus();
+        openAssetEditor();
     });
 });
 
+document.querySelectorAll('[data-edit-asset]').forEach((button) => {
+    button.addEventListener('click', () => openAssetEditor(button));
+});
+
 document.querySelectorAll('[data-close-modal]').forEach((button) => button.addEventListener('click', closeModal));
+
+document.querySelectorAll('[data-location-edit]').forEach((button) => {
+    button.addEventListener('click', () => {
+        const row = button.closest('tr');
+        const editRow = row.nextElementSibling;
+        const shouldOpen = editRow.hidden;
+
+        document.querySelectorAll('[data-location-edit-row]').forEach((openRow) => {
+            openRow.hidden = true;
+            openRow.previousElementSibling.querySelector('[data-location-edit]')?.setAttribute('aria-expanded', 'false');
+        });
+
+        editRow.hidden = !shouldOpen;
+        button.setAttribute('aria-expanded', String(shouldOpen));
+    });
+});
+
+document.querySelectorAll('[data-location-edit-cancel]').forEach((button) => {
+    button.addEventListener('click', () => {
+        const editRow = button.closest('[data-location-edit-row]');
+        editRow.hidden = true;
+        editRow.previousElementSibling.querySelector('[data-location-edit]')?.setAttribute('aria-expanded', 'false');
+    });
+});
 
 modal?.addEventListener('click', (event) => {
     if (event.target === modal) closeModal();

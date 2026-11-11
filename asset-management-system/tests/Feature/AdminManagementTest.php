@@ -122,6 +122,10 @@ class AdminManagementTest extends TestCase
             ->assertDontSee('name="code"', false)
             ->assertDontSee('name="parent_id"', false)
             ->assertDontSeeText('Parent location')
+            ->assertDontSeeText('Description')
+            ->assertSeeText('Manage branches')
+            ->assertSee('data-location-edit-row hidden', false)
+            ->assertSee('data-location-edit-cancel', false)
             ->assertSeeText('Update')
             ->assertSeeText('Delete');
     }
@@ -358,11 +362,17 @@ class AdminManagementTest extends TestCase
             'role_id' => $departmentManagerRole->id,
             'is_active' => '1',
             'department_id' => $department->id,
+            'phone' => '09 761234567',
         ])->assertRedirect(route('admin.users'));
 
+        $this->assertDatabaseHas('users', [
+            'id' => $employee->id,
+            'phone' => '+959761234567',
+        ]);
         $this->assertDatabaseHas('employees', [
             'user_id' => $employee->id,
             'department_id' => $department->id,
+            'phone' => '+959761234567',
         ]);
     }
 

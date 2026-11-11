@@ -46,8 +46,16 @@ class AssetController extends Controller
 
         return view('admin.dashboard', [
             'assets' => $assets,
-            'categories' => Category::query()->where('is_active', true)->orderBy('name')->get(),
-            'locations' => Location::query()->where('is_active', true)->orderBy('name')->get(),
+            'categories' => Category::query()
+                ->where('is_active', true)
+                ->when(old('category_id'), fn ($query, $id) => $query->orWhereKey($id))
+                ->orderBy('name')
+                ->get(),
+            'locations' => Location::query()
+                ->where('is_active', true)
+                ->when(old('location_id'), fn ($query, $id) => $query->orWhereKey($id))
+                ->orderBy('name')
+                ->get(),
             'totalAssets' => Asset::query()->count(),
             'availableAssets' => Asset::query()->where('status', 'available')->count(),
             'assignedAssets' => Asset::query()->where('status', 'assigned')->count(),
@@ -110,5 +118,51 @@ class AssetController extends Controller
 
         return to_route('admin.dashboard')
             ->with('status', 'Asset added to the registry.');
+    }
+
+    public function update(Request $request, Asset $asset): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'category_id' => ['required', Rule::exists('categories', 'id')->where(
+                fn ($query) => $query->where('is_active', true)->orWhere('id', $asset->category_id)
+            )],
+            'location_id' => ['nullable', Rule::exists('locations', 'id')->where(
+                fn ($query) => $query->where('is_active', true)->orWhere('id', $asset->location_id)
+            )],
+            'asset_code' => ['required', 'string', 'max:255', Rule::unique('assets', 'asset_code')->ignore($asset->id)],
+            'serial_number' => ['nullable', 'string', 'max:255', Rule::unique('assets', 'serial_number')->ignore($asset->id)],
+            'brand' => ['nullable', 'string', 'max:255'],
+            'model' => ['nullable', 'string', 'max:255'],
+            'purchase_date' => ['nullable', 'date'],
+            'purchase_cost' => ['nullable', 'numeric', 'min:0'],
+            'warranty_expiry_date' => ['nullable', 'date'],
+            'condition' => ['required', Rule::in(['good', 'fair', 'poor'])],
+            'description' => ['nullable', 'string', 'max:5000'],
+        ]);
+
+        DB::transaction(function () use ($validated, $request, $asset): void {
+            $asset = Asset::query()->lockForUpdate()->findOrFail($asset->id);
+            $asset->fill([...$validated, 'updated_by' => $request->user()->id]);
+            $changes = $asset->getDirty();
+            $changedFields = array_values(array_diff(array_keys($changes), ['updated_by']));
+
+            if ($changedFields === []) {
+                return;
+            }
+
+            $asset->save();
+            AssetActivity::query()->create([
+                'asset_id' => $asset->id,
+                'user_id' => $request->user()->id,
+                'action_type' => 'updated',
+                'description' => "Updated {$asset->asset_code}: ".implode(', ', $changedFields).'.',
+                'details' => ['changed_fields' => $changedFields],
+                'occurred_at' => now(),
+            ]);
+        });
+
+        return to_route('admin.dashboard')
+            ->with('status', 'Asset details updated.');
     }
 }

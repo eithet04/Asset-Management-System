@@ -389,17 +389,21 @@ class AssetOperationsTest extends TestCase
     {
         $this->post(route('register.store'), [
             'name' => 'New Employee',
-            'email' => 'new.employee@example.com',
-            'password' => 'a-strong-password',
-            'password_confirmation' => 'a-strong-password',
-        ])->assertRedirect(route('employee.dashboard'));
+            'email' => 'new.employee@gmail.com',
+            'phone' => '09 761234567',
+            'password' => 'A-strong-password1!',
+            'password_confirmation' => 'A-strong-password1!',
+        ])->assertRedirect(route('verification.notice', ['email' => 'new.employee@gmail.com']));
 
-        $user = User::query()->where('email', 'new.employee@example.com')->firstOrFail();
+        $user = User::query()->where('email', 'new.employee@gmail.com')->firstOrFail();
+        $this->assertGuest();
+        $this->assertSame('+959761234567', $user->phone);
         $this->assertDatabaseHas('employees', [
             'user_id' => $user->id,
             'employee_code' => 'EMP-'.str_pad((string) $user->id, 6, '0', STR_PAD_LEFT),
             'first_name' => 'New',
             'last_name' => 'Employee',
+            'phone' => '+959761234567',
         ]);
     }
 

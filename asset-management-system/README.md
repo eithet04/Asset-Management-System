@@ -1,4 +1,4 @@
-# Assetflow asset management
+# Axora asset management
 
 Laravel application for maintaining an asset register. The admin asset registry
 supports persistent asset registration, search, status filtering, and summary
@@ -12,7 +12,7 @@ maintenance tracking with asset status history, and persisted company settings.
 - PHP 8.3 or later with the extensions required by Laravel
 - Composer
 - Node.js and npm
-- MySQL/MariaDB for shared live data, or SQLite for an isolated local setup
+- PostgreSQL
 
 ## Local setup
 
@@ -28,13 +28,65 @@ npm run build
 php artisan serve
 ```
 
-The default `.env.example` uses SQLite. The seeder creates application roles
-and starter asset categories; it does not create a shared demo user. Register
-the first account in the browser, then promote it to an administrator:
+The `.env.example` uses PostgreSQL. Create the database and set its connection
+values in the ignored `.env` file before migrating. The seeder creates
+application roles and starter asset categories; it does not create a shared
+demo user. Register with a Gmail address and Myanmar mobile number, verify the
+address, then promote the account to an administrator:
 
 ```powershell
-php artisan users:assign-role your-email@example.com admin
+php artisan users:assign-role your-email@gmail.com admin
 ```
+
+Each teammate using a separate local database must create their own administrator
+account after migrating. From the `asset-management-system` directory, run:
+
+```powershell
+php artisan users:create-admin your-admin@gmail.com
+```
+
+The command prompts for the administrator name and a strong password without
+echoing the password. Do not commit database dumps, account passwords, or
+`.env` credentials to Git. For a shared team login, deploy one application
+connected to a shared, access-controlled database instead of copying account
+credentials into the repository.
+
+## Login, Gmail verification, and two-step sign-in
+
+Email login accepts Gmail addresses only. New employee accounts and all
+non-admin roles must verify their Gmail address. Admins do not need email
+verification or a sign-in code; asset controllers skip the sign-in code but
+still need a verified Gmail address. Other logins (including phone-number
+logins) require a six-digit email code. Myanmar phone numbers are stored in
+normalized `+959...` form.
+Passwords require at least eight characters with uppercase, lowercase, a
+number, and a symbol. Password reset links use Laravel's `password_reset_tokens`
+table and expire after the configured 60 minutes.
+
+To send verification links, sign-in codes, and password reset messages through
+Gmail, use a Google App Password (not your regular Gmail password) and set these
+values in `.env`:
+
+```dotenv
+MAIL_MAILER=smtp
+MAIL_SCHEME=smtps
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=465
+MAIL_USERNAME=your-account@gmail.com
+MAIL_PASSWORD=your-16-character-app-password
+MAIL_FROM_ADDRESS=your-account@gmail.com
+MAIL_FROM_NAME="${APP_NAME}"
+```
+
+Keep the app password private and never commit `.env`. After changing mail or
+database settings when configuration is cached, run `php artisan config:clear`.
+For a development-only mail preview, Laravel's `MAIL_MAILER=log` writes
+messages to the application log instead of delivering them.
+
+The authentication schema migration adds a nullable unique phone field and
+the OTP challenge table without changing existing user data. Existing users
+can continue using a verified Gmail address; administrators can add their
+normalized phone number on Admin → User roles to enable phone login.
 
 Available roles are `admin`, `asset_controller`, `manager`, `department_manager`,
 `hr_admin_staff`, `it_technician`, `management_viewer`, and `employee`.
