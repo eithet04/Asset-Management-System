@@ -85,4 +85,29 @@ class Asset extends Model
     {
         return $this->hasMany(AssetActivity::class);
     }
+
+    public function requests(): HasMany
+    {
+        return $this->hasMany(AssetRequest::class, 'fulfilled_asset_id');
+    }
+
+    public function purchaseRecords(): HasMany
+    {
+        return $this->hasMany(AssetPurchaseRecord::class);
+    }
+
+    public function warranties(): HasMany
+    {
+        return $this->hasMany(AssetWarranty::class);
+    }
+
+    public function verificationItems(): HasMany
+    {
+        return $this->hasMany(AssetVerificationItem::class);
+    }
+
+    public function disposals(): HasMany
+    {
+        return $this->hasMany(AssetDisposal::class);
+    }
 }

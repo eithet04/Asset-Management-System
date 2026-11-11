@@ -1,58 +1,119 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Assetflow asset management
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Laravel application for maintaining an asset register. The admin asset registry
+supports persistent asset registration, search, status filtering, and summary
+counts. Asset registrations are recorded in the configured database and in the
+activity log. The admin **Manage your workspace** page provides category and
+location create/edit/archive forms, account role and activation management,
+maintenance tracking with asset status history, and persisted company settings.
 
-## About Laravel
+## Requirements
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- PHP 8.3 or later with the extensions required by Laravel
+- Composer
+- Node.js and npm
+- MySQL/MariaDB for shared live data, or SQLite for an isolated local setup
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Local setup
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Run these commands from the `asset-management-system` directory:
 
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+```powershell
+composer install
+Copy-Item .env.example .env
+php artisan key:generate
+php artisan migrate --seed
+npm ci
+npm run build
+php artisan serve
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+The default `.env.example` uses SQLite. The seeder creates application roles
+and starter asset categories; it does not create a shared demo user. Register
+the first account in the browser, then promote it to an administrator:
 
-## Contributing
+```powershell
+php artisan users:assign-role your-email@example.com admin
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Available roles are `admin`, `asset_controller`, `manager`, `department_manager`,
+`hr_admin_staff`, `it_technician`, `management_viewer`, and `employee`.
+Assign a department to department-manager accounts on the Admin → User roles
+page; they cannot access department data until this is set. HR/Admin Staff get a
+read-only employee asset list, IT Staff/Technicians get maintenance and
+condition workflows, and Management/Viewers get read-only reports.
 
-## Code of Conduct
+## Sharing live records with teammates
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Git push/pull shares application code, not records stored in a local database.
+The simplest team setup is one deployed website connected to a private hosted
+database; teammates sign in to that website, and do not need to run or pull the
+app to see new records. If you also need multiple app installations to share
+records:
 
-## Security Vulnerabilities
+1. Create a hosted MySQL/MariaDB database and a restricted database user.
+2. In each installation's ignored `.env`, set `DB_CONNECTION=mysql` and the
+   same database connection details. Share credentials only through a secure
+   secret channel, use TLS, and restrict database network access to trusted
+   hosts; do not expose the database to the public internet.
+3. Deploy or pull the application code, then run `php artisan migrate --seed`
+   against that shared database.
+4. Each teammate signs in with their own account. Do not copy `.env` or
+   production database credentials into Git.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+The shared database is the source of truth: new records appear for everyone
+using that database without another code push. Keep regular database backups
+and do not use real employee or company data as Git seed files. Local SQLite
+databases remain private to each machine.
 
-## License
+The admin management sections are separate pages linked from the dashboard:
+`/admin/categories`, `/admin/locations`, `/admin/branches`, `/admin/departments`,
+`/admin/users`, `/admin/maintenance`, and `/admin/settings`. Categories and
+locations can be deactivated rather than deleted, so previous asset references
+and history remain intact; inactive categories and locations cannot be selected
+for new assets. Location codes are not required. User access and organization
+management require an active administrator account.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Asset lifecycle
+
+After pulling these changes, apply the additive asset operations migrations from
+the `asset-management-system` directory:
+
+```powershell
+php artisan migrate
+```
+
+Do not use `migrate:fresh` on a database with records. Admins and managers can
+open `/operations/assignments`, `/operations/returns`, `/operations/transfers`,
+`/operations/status`, `/operations/requests`, `/operations/history`, and
+`/operations/reports` from the asset operations navigation. Purchase records
+and invoice attachments are at `/operations/purchases`; warranty details,
+documents, and claims are at `/operations/warranties`; inventory check findings
+are at `/operations/verification`; disposal requests and approvals are at
+`/operations/disposals`; maintenance with photo attachments and technician
+updates is at `/operations/maintenance`; and each signed-in user can read
+their notifications at `/operations/notifications` (employees use
+`/employee/notifications`). These pages record
+who performed each action and keep asset assignments, returns, transfers,
+status/condition changes, and activity history in the configured database.
+Employee accounts can submit a request at `/employee/asset-requests` and track
+its approval there. Newly registered employee accounts receive a linked
+employee profile so they can be assigned assets. Existing employee accounts
+receive a profile the next time they open their employee dashboard.
+
+Reports can be downloaded as CSV. Use a private shared database (rather than
+Git) if teammates need to see the same live records.
+Warranty expiry reminders are scheduled daily at 08:00 Asia/Yangon time for
+30, 7, and 1 day before expiry. On a local Windows development machine, run
+`php artisan schedule:work` in a separate terminal to process the reminders;
+production deployments should run Laravel's scheduler once per minute.
+Uploaded invoices, warranty documents, and maintenance photos are stored on
+Laravel's private local disk and downloaded only by authenticated managers or
+administrators.
+
+## Development
+
+```powershell
+php artisan test
+npm run dev
+```

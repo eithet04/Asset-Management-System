@@ -32,6 +32,32 @@ class Employee extends Model
         ];
     }
 
+    public static function createForUser(User $user): self
+    {
+        $profile = self::query()->where('user_id', $user->id)->first();
+        if ($profile) {
+            return $profile;
+        }
+
+        $nameParts = preg_split('/\s+/', trim($user->name), 2) ?: [];
+        $baseCode = 'EMP-'.str_pad((string) $user->id, 6, '0', STR_PAD_LEFT);
+        $employeeCode = $baseCode;
+        $suffix = 1;
+        while (self::query()->where('employee_code', $employeeCode)->exists()) {
+            $employeeCode = $baseCode.'-'.$suffix++;
+        }
+
+        return self::query()->firstOrCreate(
+            ['user_id' => $user->id],
+            [
+                'employee_code' => $employeeCode,
+                'first_name' => $nameParts[0] ?? $user->name,
+                'last_name' => $nameParts[1] ?? '',
+                'email' => $user->email,
+            ],
+        );
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
