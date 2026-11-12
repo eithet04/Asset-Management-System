@@ -1058,7 +1058,6 @@ body.auth-reference-page .auth-footer-tagline { justify-self: end; }
 }
 
 
-
 .welcome-page {
     background: linear-gradient(180deg, #f3f6fb 0%, #eef4ff 100%);
     color: #18243a;
@@ -1423,4 +1422,180 @@ body.auth-reference-page .auth-footer-tagline { justify-self: end; }
         flex-direction: column;
         align-items: flex-start;
     }
+}
+
+/* Shared dashboard refresh */
+.admin-dashboard .main-panel,
+.manager-dashboard .main-panel,
+.employee-dashboard .main-panel {
+    background: #f4f7fc;
+}
+
+.admin-dashboard .topbar,
+.manager-dashboard .topbar,
+.employee-dashboard .topbar {
+    border-color: #e6ebf3;
+    background: rgba(255, 255, 255, .94);
+    box-shadow: 0 4px 18px rgba(29, 48, 79, .035);
+}
+
+.admin-dashboard .page-content,
+.manager-dashboard .page-content,
+.employee-dashboard .page-content {
+    width: min(100%, 1600px);
+    padding-top: clamp(24px, 3.2vw, 44px);
+}
+
+.admin-dashboard .page-heading,
+.manager-dashboard .page-heading,
+.employee-dashboard .page-heading {
+    position: relative;
+    min-height: 172px;
+    align-items: center;
+    overflow: hidden;
+    margin-bottom: 26px;
+    padding: 28px clamp(22px, 3vw, 38px);
+    border: 1px solid #263f69;
+    border-radius: 18px;
+    background: linear-gradient(115deg, #142743 0%, #1b3964 66%, #244a7e 100%);
+    box-shadow: 0 14px 32px rgba(28, 57, 98, .16);
+    isolation: isolate;
+}
+
+.admin-dashboard .page-heading::after,
+.manager-dashboard .page-heading::after,
+.employee-dashboard .page-heading::after {
+    position: absolute;
+    z-index: -1;
+    top: -130px;
+    right: 7%;
+    width: 330px;
+    height: 330px;
+    border: 1px solid rgba(255, 255, 255, .12);
+    border-radius: 50%;
+    box-shadow: 0 0 0 34px rgba(255, 255, 255, .045), 0 0 0 68px rgba(255, 255, 255, .03);
+    content: '';
+    pointer-events: none;
+}
+
+.admin-dashboard .page-heading .eyebrow,
+.manager-dashboard .page-heading .eyebrow,
+.employee-dashboard .page-heading .eyebrow {
+    margin-bottom: 10px;
+    color: #a9c1e3;
+    font-size: 10px;
+    letter-spacing: 1.7px;
+}
+
+.admin-dashboard .page-heading h1,
+.manager-dashboard .page-heading h1,
+.employee-dashboard .page-heading h1 {
+    margin-bottom: 7px;
+    color: #fff;
+    font-size: clamp(25px, 2.5vw, 36px);
+    letter-spacing: -.9px;
+}
+
+.admin-dashboard .page-heading .page-subtitle,
+.manager-dashboard .page-heading .page-subtitle,
+.employee-dashboard .page-heading .page-subtitle {
+    color: #c1cee0;
+    font-size: 13px;
+}
+
+.manager-dashboard .manager-date {
+    position: relative;
+    z-index: 1;
+    padding: 9px 12px;
+    border: 1px solid rgba(255, 255, 255, .18);
+    border-radius: 999px;
+    color: #e0e9f6;
+    background: rgba(255, 255, 255, .08);
+}
+
+.employee-dashboard .page-heading > .button {
+    position: relative;
+    z-index: 1;
+    color: #1a3a65;
+    background: #fff;
+    box-shadow: 0 5px 14px rgba(8, 22, 42, .18);
+}
+
+.admin-dashboard .stat-card,
+.manager-dashboard .manager-stat,
+.employee-dashboard .employee-stat {
+    position: relative;
+    overflow: hidden;
+    border-color: #e3e9f2;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 5px 18px rgba(29, 48, 79, .045);
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+
+.admin-dashboard .stat-card:hover,
+.manager-dashboard .manager-stat:hover,
+.employee-dashboard .employee-stat:hover {
+    transform: translateY(-2px);
+    border-color: #d5deeb;
+    box-shadow: 0 12px 26px rgba(29, 48, 79, .085);
+}
+
+.admin-dashboard .inventory-card,
+.manager-dashboard .inventory-card,
+.employee-dashboard .inventory-card,
+.employee-dashboard .employee-request-strip {
+    border-color: #e3e9f2;
+    border-radius: 14px;
+    box-shadow: 0 7px 24px rgba(29, 48, 79, .05);
+}
+
+.admin-dashboard .section-heading h2,
+.manager-dashboard .section-heading h2,
+.employee-dashboard .section-heading h2 {
+    color: #1d2b43;
+    font-size: 17px;
+    letter-spacing: -.35px;
+}
+
+.admin-dashboard .section-heading p,
+.manager-dashboard .section-heading p,
+.employee-dashboard .section-heading p {
+    color: #78869b;
+    font-size: 11px;
+}
+
+.admin-dashboard .asset-table th,
+.manager-dashboard .asset-table th,
+.employee-dashboard .asset-table th {
+    background: #f8fafd;
+    letter-spacing: .045em;
+    text-transform: uppercase;
+}
+
+.admin-dashboard .asset-table tbody tr:hover,
+.manager-dashboard .asset-table tbody tr:hover,
+.employee-dashboard .asset-table tbody tr:hover {
+    background: #f7faff;
+}
+
+@media (max-width: 640px) {
+    .admin-dashboard .page-heading,
+    .manager-dashboard .page-heading,
+    .employee-dashboard .page-heading {
+        min-height: 145px;
+        align-items: flex-start;
+        padding: 22px 18px;
+        border-radius: 14px;
+    }
+
+    .manager-dashboard .page-heading { flex-direction: column; }
+    .manager-dashboard .manager-date { align-self: flex-start; }
+    .employee-dashboard .page-heading > .button { width: auto; min-height: 38px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .admin-dashboard .stat-card,
+    .manager-dashboard .manager-stat,
+    .employee-dashboard .employee-stat { transition: none; }
 }
