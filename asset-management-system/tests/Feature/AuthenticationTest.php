@@ -2,14 +2,12 @@
 
 namespace Tests\Feature;
 
-use App\Mail\LoginOtpMail;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
@@ -51,22 +49,19 @@ class AuthenticationTest extends TestCase
         $this->get(route('employee.dashboard'))->assertRedirect(route('login'));
     }
 
-    public function test_gmail_address_is_verified_before_login_and_phone_login_completes_otp(): void
+    public function test_gmail_address_is_verified_before_login_and_phone_login_works_without_otp(): void
     {
         $manager = $this->createUserWithRole(User::ROLE_MANAGER, [
             'email' => 'manager@gmail.com',
             'phone' => '+959761234567',
             'password' => 'Secure-password1!',
         ]);
-        Mail::fake();
-
-        $this->signInAndVerify($manager, '959 761234567')
+        $this->signIn($manager, '959 761234567')
             ->assertRedirect(route('manager.dashboard'));
         $this->assertAuthenticatedAs($manager);
-        Mail::assertSent(LoginOtpMail::class, fn (LoginOtpMail $mail): bool => $mail->hasTo($manager->email));
     }
 
-    public function test_new_roles_redirect_to_their_role_specific_workspace_after_otp(): void
+    public function test_new_roles_redirect_to_their_role_specific_workspace_without_otp(): void
     {
         foreach ([
             User::ROLE_HR_ADMIN_STAFF => 'operations.people',
@@ -78,17 +73,13 @@ class AuthenticationTest extends TestCase
                 'email' => $role.'@gmail.com',
                 'password' => 'Secure-password1!',
             ]);
-            Mail::fake();
-
-            $this->signInAndVerify($user, $user->email)->assertRedirect(route($destination));
+            $this->signIn($user, $user->email)->assertRedirect(route($destination));
             $this->post(route('logout'));
         }
     }
 
     public function test_admins_and_asset_controllers_sign_in_without_email_otp(): void
     {
-        Mail::fake();
-
         foreach ([
             User::ROLE_ADMIN => 'admin.dashboard',
             User::ROLE_ASSET_CONTROLLER => 'manager.dashboard',
@@ -103,7 +94,6 @@ class AuthenticationTest extends TestCase
                 'password' => 'Secure-password1!',
             ])->assertRedirect(route($destination));
             $this->assertAuthenticatedAs($user);
-            Mail::assertNothingSent();
             $this->get(route($destination))->assertOk();
             $this->post(route('logout'));
         }
@@ -173,71 +163,26 @@ class AuthenticationTest extends TestCase
         $this->assertGuest();
     }
 
-    public function test_otp_is_stored_hashed_and_used_once(): void
+    public function test_employee_signs_in_without_email_otp(): void
     {
         $user = $this->createUserWithRole(User::ROLE_EMPLOYEE, [
             'email' => 'otp.user@gmail.com',
             'password' => 'Secure-password1!',
         ]);
-        Mail::fake();
         $this->post(route('login.store'), [
             'identifier' => $user->email,
             'password' => 'Secure-password1!',
-        ])->assertRedirect(route('otp.show'));
-
-        $challenge = $user->loginOtpChallenges()->latest()->firstOrFail();
-        $mail = Mail::sent(LoginOtpMail::class)->last();
-        $this->assertNotSame($mail->code, $challenge->otp_hash);
-        $this->assertTrue(Hash::check($mail->code, $challenge->otp_hash));
-        $this->assertGuest();
-
-        $this->post(route('otp.verify'), ['code' => $mail->code])
-            ->assertRedirect(route('employee.dashboard'));
+        ])->assertRedirect(route('employee.dashboard'));
         $this->assertAuthenticatedAs($user);
-        $this->assertNotNull($challenge->fresh()->verified_at);
-        $this->post(route('otp.verify'), ['code' => $mail->code])->assertSessionHasErrors('code');
     }
 
-    public function test_otp_attempt_limit_expiry_and_resend_cooldown(): void
-    {
-        $user = $this->createUserWithRole(User::ROLE_EMPLOYEE, [
-            'email' => 'otp.limits@gmail.com',
-            'password' => 'Secure-password1!',
-        ]);
-        Mail::fake();
-        $this->post(route('login.store'), [
-            'identifier' => $user->email,
-            'password' => 'Secure-password1!',
-        ])->assertRedirect(route('otp.show'));
-        $challenge = $user->loginOtpChallenges()->latest()->firstOrFail();
-        $code = Mail::sent(LoginOtpMail::class)->last()->code;
-        $wrongCode = $code === '000000' ? '111111' : '000000';
-
-        for ($attempt = 0; $attempt < 5; $attempt++) {
-            $this->post(route('otp.verify'), ['code' => $wrongCode])->assertSessionHasErrors('code');
-        }
-        $this->assertSame(5, $challenge->fresh()->attempts);
-
-        $this->from(route('otp.show'))->post(route('otp.resend'))->assertSessionHasErrors('code');
-        $this->travel(61)->seconds();
-        $this->from(route('otp.show'))->post(route('otp.resend'))->assertRedirect(route('otp.show'));
-        $this->assertSame(0, $challenge->fresh()->attempts);
-        Mail::assertSentTimes(LoginOtpMail::class, 2);
-
-        $this->travel(301)->seconds();
-        $this->post(route('otp.verify'), ['code' => Mail::sent(LoginOtpMail::class)->last()->code])
-            ->assertSessionHasErrors('code');
-        $this->assertGuest();
-    }
-
-    public function test_protected_routes_require_a_verified_two_factor_session(): void
+    public function test_protected_routes_only_require_authentication_and_role(): void
     {
         $employee = $this->createUserWithRole(User::ROLE_EMPLOYEE);
 
         $this->actingAs($employee)
-            ->withSession(['two_factor_verified_challenge_id' => null])
             ->get(route('employee.dashboard'))
-            ->assertRedirect(route('login'));
+            ->assertOk();
     }
 
     public function test_forgot_password_resets_password_and_invalidates_the_token(): void
@@ -410,15 +355,11 @@ class AuthenticationTest extends TestCase
         return Role::query()->firstOrCreate(['slug' => $slug], ['name' => ucfirst($slug)]);
     }
 
-    private function signInAndVerify(User $user, string $identifier)
+    private function signIn(User $user, string $identifier)
     {
-        $this->post(route('login.store'), [
+        return $this->post(route('login.store'), [
             'identifier' => $identifier,
             'password' => 'Secure-password1!',
-        ])->assertRedirect(route('otp.show'));
-
-        $code = Mail::sent(LoginOtpMail::class)->last()->code;
-
-        return $this->post(route('otp.verify'), ['code' => $code]);
+        ]);
     }
 }

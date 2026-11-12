@@ -8,7 +8,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
-    <div class="admin-shell">
+    <div class="admin-shell admin-dashboard">
         <aside class="sidebar" id="sidebar">
             <a class="brand" href="/" aria-label="Axora home">
                 <span class="brand-mark" aria-hidden="true">

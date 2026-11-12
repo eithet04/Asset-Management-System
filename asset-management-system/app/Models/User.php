@@ -63,11 +63,6 @@ class User extends Authenticatable implements MustVerifyEmail
         };
     }
 
-    public function requiresTwoFactorAuthentication(): bool
-    {
-        return ! in_array($this->role?->slug, [self::ROLE_ADMIN, self::ROLE_ASSET_CONTROLLER], true);
-    }
-
     public function requiresEmailVerification(): bool
     {
         return $this->role?->slug !== self::ROLE_ADMIN;
@@ -96,11 +91,6 @@ class User extends Authenticatable implements MustVerifyEmail
     public function assetRequests(): HasMany
     {
         return $this->hasMany(AssetRequest::class, 'requester_user_id');
-    }
-
-    public function loginOtpChallenges(): HasMany
-    {
-        return $this->hasMany(LoginOtpChallenge::class);
     }
 
     /**

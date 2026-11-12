@@ -5,9 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
-use App\Mail\LoginOtpMail;
 use App\Models\Employee;
-use App\Models\LoginOtpChallenge;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -15,7 +13,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
 
 class AuthenticationController extends Controller
@@ -51,39 +48,10 @@ class AuthenticationController extends Controller
                 ->with('status', 'Verify your Gmail address before signing in. We sent you a verification link.');
         }
 
-        if (! $user->requiresTwoFactorAuthentication()) {
-            $request->session()->forget([
-                'pending_login_challenge_id',
-                'pending_login_remember',
-                'two_factor_verified_challenge_id',
-            ]);
-            Auth::login($user, $request->boolean('remember'));
-            $request->session()->regenerate();
+        Auth::login($user, $request->boolean('remember'));
+        $request->session()->regenerate();
 
-            return redirect()->intended(route($user->dashboardRoute()));
-        }
-
-        $code = (string) random_int(100000, 999999);
-        $challenge = DB::transaction(function () use ($user, $code): LoginOtpChallenge {
-            User::query()->whereKey($user->id)->lockForUpdate()->firstOrFail();
-            $user->loginOtpChallenges()->whereNull('verified_at')->delete();
-
-            return $user->loginOtpChallenges()->create([
-                'otp_hash' => Hash::make($code),
-                'expires_at' => now()->addMinutes(5),
-                'sent_at' => now(),
-                'attempts' => 0,
-            ]);
-        });
-
-        Mail::to($user->email)->send(new LoginOtpMail($code));
-
-        $request->session()->put([
-            'pending_login_challenge_id' => $challenge->id,
-            'pending_login_remember' => $request->boolean('remember'),
-        ]);
-
-        return to_route('otp.show')->with('status', 'A sign-in code was sent to your verified Gmail address.');
+        return redirect()->intended(route($user->dashboardRoute()));
     }
 
     public function createRegistration(Request $request): View|RedirectResponse
@@ -137,21 +105,10 @@ class AuthenticationController extends Controller
             return null;
         }
 
-        $challengeId = $request->session()->get('two_factor_verified_challenge_id');
-        $verified = ! $user->requiresTwoFactorAuthentication()
-            || ($challengeId && $user->loginOtpChallenges()
-                ->whereKey($challengeId)
-                ->whereNotNull('verified_at')
-                ->exists());
         if ($user->is_active
             && (! $user->requiresEmailVerification() || $user->hasVerifiedEmail())
-            && $verified
             && $user->dashboardRoute() !== null) {
             return redirect()->route($user->dashboardRoute());
-        }
-
-        if ($request->session()->has('pending_login_challenge_id')) {
-            return redirect()->route('otp.show');
         }
 
         Auth::logout();

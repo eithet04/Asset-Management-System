@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Axora screen design</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;650&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #172238;
+            --ink-strong: #18243a;
+            --muted: #8691a3;
+            --line: #e8ecf2;
+            --canvas: #f5f7fb;
+            --navy: #111a2b;
+            --blue: #2862e8;
+            --blue-soft: #edf3ff;
+            --green: #169765;
+            --green-soft: #e9f8f1;
+            --amber: #d98618;
+            --amber-soft: #fff5e6;
+            --red: #dd5555;
+            --red-soft: #fff0ef;
+            --sidebar: 248px;
+        }
+        * { box-sizing: border-box; }
+        body { margin: 0; color: var(--ink); background: #e7ebf2; font-family: "Instrument Sans", Inter, ui-sans-serif, system-ui, sans-serif; }
+        button, input, select { font: inherit; }
+        button { cursor: pointer; }
+        h1, h2, p { margin: 0; }
+
+        .studio { min-height: 100vh; display: grid; grid-template-rows: auto 1fr; }
+        .studio-bar { display: flex; align-items: center; gap: 18px; padding: 12px 18px; background: #0d1422; color: #d5dceb; }
+        .studio-bar strong { font-size: 13px; font-weight: 600; letter-spacing: -.2px; }
+        .studio-bar small { color: #8b97ab; font-size: 11px; }
+        .screen-switch { display: flex; gap: 6px; margin-left: 8px; }
+        .screen-switch button, .op-switch button { border: 1px solid #2a364c; background: transparent; color: #c5cedd; border-radius: 7px; height: 32px; padding: 0 12px; font-size: 12px; font-weight: 600; }
+        .screen-switch button[aria-pressed="true"] { background: var(--blue); border-color: var(--blue); color: #fff; }
+        .studio-note { margin-left: auto; color: #8b97ab; font-size: 11px; }
+
+        .app { display: grid; grid-template-columns: var(--sidebar) 1fr; min-height: calc(100vh - 56px); background: var(--canvas); }
+        .sidebar { background: var(--navy); color: #a4afc2; padding: 22px 14px 14px; display: flex; flex-direction: column; }
+        .brand { display: flex; align-items: center; gap: 10px; padding: 0 8px 22px; color: #fff; }
+        .brand-mark { width: 34px; height: 34px; display: grid; place-items: center; background: var(--blue); border-radius: 10px; font-size: 14px; }
+        .brand strong { display: block; font-size: 15px; letter-spacing: -.3px; }
+        .brand strong span { color: #8caeff; }
+        .brand small { color: #748198; font-size: 9px; font-weight: 700; letter-spacing: 1.3px; }
+        .nav-label { padding: 14px 10px 8px; color: #69758b; font-size: 9px; font-weight: 700; letter-spacing: 1.2px; }
+        .nav-link { display: flex; align-items: center; gap: 10px; min-height: 36px; padding: 0 10px; border-radius: 7px; color: #9aa6ba; font-size: 12px; font-weight: 500; border: 0; background: transparent; width: 100%; text-align: left; }
+        .nav-link[aria-current="page"], .nav-link.active { background: var(--blue); color: #fff; }
+        .nav-link .count { margin-left: auto; font-size: 10px; color: #c9d4e8; }
+        .sidebar-user { margin-top: auto; display: flex; gap: 10px; align-items: center; padding: 14px 6px 2px; border-top: 1px solid #273147; }
+        .avatar { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: #6653c9; color: #fff; font-size: 11px; font-weight: 700; }
+        .sidebar-user strong { display: block; color: #eef1f7; font-size: 12px; }
+        .sidebar-user small { color: #8793a7; font-size: 10px; }
+
+        .main { min-width: 0; }
+        .topbar { height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 28px; background: #fff; border-bottom: 1px solid var(--line); }
+        .crumbs { color: var(--muted); font-size: 12px; display: flex; gap: 8px; }
+        .crumbs b { color: #243049; font-weight: 600; }
+        .top-actions { display: flex; align-items: center; gap: 12px; color: #647087; font-size: 12px; }
+        .dot { width: 7px; height: 7px; border-radius: 50%; background: #23ad72; display: inline-block; }
+        .page { padding: 28px 28px 36px; max-width: 1280px; }
+        .screen { display: none; }
+        .screen.active { display: block; }
+        .heading { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; margin-bottom: 22px; }
+        .eyebrow { color: #8290a6; font-size: 10px; font-weight: 700; letter-spacing: 1.2px; margin-bottom: 6px; }
+        h1 { font-size: 26px; letter-spacing: -.7px; font-weight: 650; color: var(--ink-strong); }
+        .sub { color: var(--muted); font-size: 13px; margin-top: 4px; }
+        .btn { height: 36px; padding: 0 12px; border-radius: 7px; border: 1px solid transparent; font-size: 12px; font-weight: 600; }
+        .btn-primary { background: var(--blue); color: #fff; }
+        .btn-secondary { background: #fff; color: #58657a; border-color: #e1e6ed; }
+
+        .stats { display: grid; grid-template-columns: 1.4fr repeat(3, 1fr); gap: 12px; margin-bottom: 22px; }
+        .stat { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+        .stat.lead { background: var(--navy); color: #fff; border-color: var(--navy); }
+        .stat .label { font-size: 12px; color: var(--muted); }
+        .stat.lead .label { color: #9aabc4; }
+        .stat .value { font-size: 28px; letter-spacing: -.8px; font-weight: 650; margin-top: 8px; }
+        .stat .foot { margin-top: 8px; font-size: 11px; color: #929bad; }
+        .stat.lead .foot { color: #8caeff; }
+        .pill { display: inline-flex; align-items: center; gap: 6px; border-radius: 20px; padding: 3px 8px; font-size: 11px; font-weight: 600; }
+        .pill.green { color: #138354; background: var(--green-soft); }
+        .pill.blue { color: #3168e7; background: var(--blue-soft); }
+        .pill.amber { color: #b9771b; background: var(--amber-soft); }
+        .pill.red { color: #c44747; background: var(--red-soft); }
+        .pill.neutral { color: #667186; background: #f3f5f8; }
+
+        .split { display: grid; grid-template-columns: 1.15fr .85fr; gap: 14px; }
+        .card { background: #fff; border: 1px solid var(--line); border-radius: 10px; }
+        .card-head { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+        .card-head h2 { font-size: 14px; letter-spacing: -.2px; }
+        .card-head span { color: var(--muted); font-size: 12px; }
+        .row { display: grid; grid-template-columns: 8px 1fr auto; gap: 12px; align-items: center; padding: 12px 16px; border-bottom: 1px solid #f1f4f8; }
+        .row:last-child { border-bottom: 0; }
+        .mark { width: 8px; height: 8px; border-radius: 50%; background: var(--blue); }
+        .mark.amber { background: var(--amber); }
+        .mark.green { background: var(--green); }
+        .row strong { display: block; font-size: 13px; font-weight: 600; }
+        .row small { color: var(--muted); font-size: 11px; }
+        .time { color: #98a2b3; font-size: 11px; }
+
+        .attention { padding: 6px; }
+        .attention button { width: 100%; text-align: left; border: 0; background: transparent; display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 10px; border-radius: 8px; }
+        .attention button:hover { background: #f7f9fc; }
+        .attention strong { display: block; font-size: 13px; }
+        .attention small { color: var(--muted); font-size: 11px; }
+
+        .toolbar { display: flex; gap: 8px; padding: 12px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+        .toolbar[hidden] { display: none; }
+        .search, .select { height: 36px; border: 1px solid #e1e6ed; border-radius: 7px; background: #fff; color: var(--ink); padding: 0 10px; font-size: 12px; }
+        .search { flex: 1; min-width: 180px; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; font-size: 11px; color: #7d899c; font-weight: 600; padding: 10px 14px; background: #fafbfd; }
+        td { padding: 12px 14px; border-top: 1px solid #f1f4f8; font-size: 13px; vertical-align: middle; }
+        .asset strong { display: block; font-size: 13px; }
+        .asset small { color: var(--muted); font-size: 11px; }
+        .table-foot { display: flex; justify-content: space-between; padding: 12px 14px; color: var(--muted); font-size: 12px; border-top: 1px solid var(--line); }
+
+        .workbench { display: grid; grid-template-columns: 320px 1fr; gap: 14px; align-items: start; }
+        .form { padding: 16px; display: grid; gap: 10px; }
+        .field { display: grid; gap: 5px; font-size: 11px; font-weight: 600; color: #5d6b82; }
+        .field[hidden] { display: none; }
+        .field input, .field select { height: 36px; border: 1px solid #e1e6ed; border-radius: 7px; padding: 0 10px; font-weight: 500; color: var(--ink); }
+        .op-switch { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+        .op-switch button { background: #fff; border-color: #e1e6ed; color: #58657a; }
+        .op-switch button[aria-pressed="true"] { background: #172238; color: #fff; border-color: #172238; }
+        .panel { display: none; }
+        .panel.active { display: contents; }
+        .linkish { border: 0; background: transparent; color: var(--blue); font-size: 12px; font-weight: 600; padding: 0; }
+
+        .drawer-note { margin-top: 14px; color: var(--muted); font-size: 12px; }
+        @media (max-width: 980px) {
+            .app { grid-template-columns: 1fr; }
+            .sidebar { display: none; }
+            .stats, .split, .workbench { grid-template-columns: 1fr; }
+            .studio-bar { flex-wrap: wrap; }
+            .studio-note { margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="studio">
+        <header class="studio-bar">
+            <div>
+                <strong>Axora screen design</strong><br>
+                <small id="screen-caption">Overview first. The registry lives on its own page.</small>
+            </div>
+            <nav class="screen-switch" aria-label="Screens">
+                <button type="button" data-screen="dashboard" aria-pressed="true">Dashboard</button>
+                <button type="button" data-screen="registry" aria-pressed="false">Asset registry</button>
+                <button type="button" data-screen="operations" aria-pressed="false">Operations</button>
+            </nav>
+            <span class="studio-note">Sample records. Layout only.</span>
+        </header>
+
+        <div class="app">
+            <aside class="sidebar">
+                <div class="brand">
+                    <span class="brand-mark">A</span>
+                    <div><strong>Ax<span>ora</span></strong><small>CONTROL CENTER</small></div>
+                </div>
+                <div class="nav-label">WORKSPACE</div>
+                <button class="nav-link active" type="button" data-screen="dashboard">Dashboard</button>
+                <button class="nav-link" type="button" data-screen="registry">Asset registry <span class="count">128</span></button>
+                <div class="nav-label">OPERATIONS</div>
+                <button class="nav-link" type="button" data-screen="operations" data-op="assign">Assign &amp; return</button>
+                <button class="nav-link" type="button" data-screen="operations" data-op="transfer">Transfers</button>
+                <button class="nav-link" type="button" data-screen="operations" data-op="request">Requests <span class="count">4</span></button>
+                <button class="nav-link" type="button">Maintenance</button>
+                <button class="nav-link" type="button">Purchases &amp; warranties</button>
+                <button class="nav-link" type="button">Reports &amp; history</button>
+                <div class="nav-label">MANAGE</div>
+                <button class="nav-link" type="button">Categories</button>
+                <button class="nav-link" type="button">Locations</button>
+                <button class="nav-link" type="button">Organization</button>
+                <button class="nav-link" type="button">User roles</button>
+                <button class="nav-link" type="button">Settings</button>
+                <div class="sidebar-user">
+                    <span class="avatar">E</span>
+                    <div><strong>Ei</strong><small>Administrator</small></div>
+                </div>
+            </aside>
+
+            <main class="main">
+                <header class="topbar">
+                    <div class="crumbs" id="crumbs"><span>Workspace</span><span>/</span><b>Dashboard</b></div>
+                    <div class="top-actions"><span class="dot"></span> System operational <span class="avatar">E</span></div>
+                </header>
+
+                <div class="page">
+                    <section class="screen active" id="dashboard">
+                        <div class="heading">
+                            <div>
+                                <p class="eyebrow">OVERVIEW</p>
+                                <h1>Good afternoon, Ei</h1>
+                                <p class="sub">Assets that need a decision sit on the right. The full register is one click away.</p>
+                            </div>
+                            <button class="btn btn-primary" type="button" data-screen="registry">Open registry</button>
+                        </div>
+                        <div class="stats">
+                            <article class="stat lead">
+                                <div class="label">Assets in the register</div>
+                                <div class="value">128</div>
+                                <div class="foot">86 assigned · 31 available · 11 need attention</div>
+                            </article>
+                            <article class="stat">
+                                <div class="label">Available</div>
+                                <div class="value">31</div>
+                                <div class="foot"><span class="pill green">Ready to assign</span></div>
+                            </article>
+                            <article class="stat">
+                                <div class="label">Assigned</div>
+                                <div class="value">86</div>
+                                <div class="foot"><span class="pill blue">With people</span></div>
+                            </article>
+                            <article class="stat">
+                                <div class="label">Needs attention</div>
+                                <div class="value">11</div>
+                                <div class="foot"><span class="pill amber">6 repair</span> <span class="pill red">3 damaged</span></div>
+                            </article>
+                        </div>
+                        <div class="split">
+                            <section class="card">
+                                <div class="card-head"><h2>Recent activity</h2><span>Today</span></div>
+                                <div class="row"><span class="mark green"></span><div><strong>AST-1042 assigned to Su Hlaing</strong><small>MacBook Pro 16 · Finance</small></div><span class="time">12 min</span></div>
+                                <div class="row"><span class="mark"></span><div><strong>AST-1108 returned in good condition</strong><small>Dell 27" monitor · now available</small></div><span class="time">1 hr</span></div>
+                                <div class="row"><span class="mark amber"></span><div><strong>AST-0981 moved to under maintenance</strong><small>HP LaserJet · IT workshop</small></div><span class="time">3 hr</span></div>
+                                <div class="row"><span class="mark"></span><div><strong>Transfer approved to Yangon HQ</strong><small>AST-1204 · from Mandalay branch</small></div><span class="time">Yesterday</span></div>
+                            </section>
+                            <section class="card">
+                                <div class="card-head"><h2>Needs a decision</h2><span>4 open</span></div>
+                                <div class="attention">
+                                    <button type="button" data-screen="operations" data-op="request"><div><strong>Laptop request · Aye Chan</strong><small>Waiting for approval · IT</small></div><span class="pill amber">Request</span></button>
+                                    <button type="button"><div><strong>Warranty ends in 12 days</strong><small>AST-0880 · Cisco switch</small></div><span class="pill red">Warranty</span></button>
+                                    <button type="button"><div><strong>Repair waiting on parts</strong><small>AST-0981 · opened Monday</small></div><span class="pill amber">Repair</span></button>
+                                    <button type="button"><div><strong>Verification session open</strong><small>Yangon HQ · 18 items unchecked</small></div><span class="pill blue">Count</span></button>
+                                </div>
+                            </section>
+                        </div>
+                    </section>
+
+                    <section class="screen" id="registry">
+                        <div class="heading">
+                            <div>
+                                <p class="eyebrow">ASSET REGISTRY</p>
+                                <h1>Every registered asset</h1>
+                                <p class="sub">Search, filter, and edit the register. Assignment changes stay in Operations.</p>
+                            </div>
+                            <button class="btn btn-primary" type="button" id="toggle-form">Add asset</button>
+                        </div>
+                        <div class="card">
+                            <form class="toolbar" id="asset-form" hidden>
+                                <input class="search" placeholder="Asset name" aria-label="Asset name">
+                                <select class="select" aria-label="Category"><option>Laptops</option><option>Monitors</option><option>Printers</option></select>
+                                <input class="search" placeholder="Asset code" aria-label="Asset code">
+                                <select class="select" aria-label="Location"><option>Yangon HQ</option><option>Mandalay</option></select>
+                                <select class="select" aria-label="Condition"><option>Good</option><option>Fair</option><option>Poor</option></select>
+                                <button class="btn btn-primary" type="button">Save asset</button>
+                            </form>
+                            <div class="toolbar">
+                                <input class="search" type="search" placeholder="Search name, code, or serial" aria-label="Search assets">
+                                <select class="select" aria-label="Status"><option>All statuses</option><option>Available</option><option>Assigned</option><option>Under maintenance</option><option>Damaged</option></select>
+                                <select class="select" aria-label="Category filter"><option>All categories</option><option>Laptops</option><option>Monitors</option></select>
+                                <button class="btn btn-secondary" type="button">Export</button>
+                            </div>
+                            <table>
+                                <thead>
+                                    <tr><th>Asset</th><th>Category</th><th>Location</th><th>Assigned to</th><th>Status</th><th></th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td class="asset"><strong>MacBook Pro 16</strong><small>AST-1042 · SN-882110</small></td><td>Laptops</td><td>Yangon HQ</td><td>Su Hlaing</td><td><span class="pill blue">Assigned</span></td><td><button class="linkish" type="button">Edit</button></td></tr>
+                                    <tr><td class="asset"><strong>Dell 27" monitor</strong><small>AST-1108 · SN-441902</small></td><td>Monitors</td><td>Store room</td><td>—</td><td><span class="pill green">Available</span></td><td><button class="linkish" type="button">Edit</button></td></tr>
+                                    <tr><td class="asset"><strong>HP LaserJet</strong><small>AST-0981 · SN-220184</small></td><td>Printers</td><td>IT workshop</td><td>—</td><td><span class="pill amber">Under maintenance</span></td><td><button class="linkish" type="button">Edit</button></td></tr>
+                                    <tr><td class="asset"><strong>ThinkPad T14</strong><small>AST-1011 · SN-773001</small></td><td>Laptops</td><td>Mandalay</td><td>Ko Min</td><td><span class="pill blue">Assigned</span></td><td><button class="linkish" type="button">Edit</button></td></tr>
+                                    <tr><td class="asset"><strong>Cisco switch</strong><small>AST-0880 · SN-190332</small></td><td>Network</td><td>Yangon HQ</td><td>—</td><td><span class="pill red">Damaged</span></td><td><button class="linkish" type="button">Edit</button></td></tr>
+                                </tbody>
+                            </table>
+                            <div class="table-foot"><span>Showing 5 of 128</span><span>Page 1</span></div>
+                        </div>
+                        <p class="drawer-note">Add and edit stay on this page, in the bar above the table. Status that comes from an assignment, return, or repair is changed in Operations so the history stays intact.</p>
+                    </section>
+
+                    <section class="screen" id="operations">
+                        <div class="heading">
+                            <div>
+                                <p class="eyebrow">ASSET OPERATIONS</p>
+                                <h1 id="op-title">Assign an available asset</h1>
+                                <p class="sub" id="op-sub">The form is the action. The table is the record of what already happened.</p>
+                            </div>
+                        </div>
+                        <div class="op-switch" role="tablist" aria-label="Operation">
+                            <button type="button" data-op="assign" aria-pressed="true">Assign</button>
+                            <button type="button" data-op="return" aria-pressed="false">Return</button>
+                            <button type="button" data-op="transfer" aria-pressed="false">Transfer</button>
+                            <button type="button" data-op="request" aria-pressed="false">Requests</button>
+                        </div>
+
+                        <div class="workbench">
+                            <form class="card form" id="op-form">
+                                <div class="field">Asset<select><option>AST-1108 — Dell 27" monitor</option><option>AST-1114 — Logitech keyboard</option></select></div>
+                                <div class="field" data-for="assign request">Employee<select><option>Aye Chan — IT</option><option>Su Hlaing — Finance</option></select></div>
+                                <div class="field" data-for="assign">Department<select><option>Use employee department</option><option>IT</option><option>Finance</option></select></div>
+                                <div class="field" data-for="return">Condition<select><option>Good</option><option>Fair</option><option>Poor</option></select></div>
+                                <div class="field" data-for="return">Next status<select><option>Available</option><option>Under maintenance</option><option>Damaged</option></select></div>
+                                <div class="field" data-for="transfer">New holder<select><option>No holder change</option><option>Ko Min</option></select></div>
+                                <div class="field" data-for="transfer">New location<select><option>Yangon HQ</option><option>Mandalay</option></select></div>
+                                <div class="field" data-for="request">Decision<select><option>Approve</option><option>Reject</option></select></div>
+                                <div class="field">Date<input type="datetime-local" value="2026-11-12T13:30"></div>
+                                <div class="field">Remarks<input placeholder="Optional note"></div>
+                                <button class="btn btn-primary" type="button" id="op-submit">Assign asset</button>
+                            </form>
+
+                            <section class="card">
+                                <div class="card-head"><h2 id="op-table-title">Active assignments</h2><span>Sample</span></div>
+                                <table>
+                                    <thead id="op-head"></thead>
+                                    <tbody id="op-body"></tbody>
+                                </table>
+                            </section>
+                        </div>
+                    </section>
+                </div>
+            </main>
+        </div>
+    </div>
+    <script>
+        const captions = {
+            dashboard: "Overview first. The registry lives on its own page.",
+            registry: "Search and edit the register. Moves happen in Operations.",
+            operations: "One action on the left, the matching records on the right."
+        };
+        const crumbs = {
+            dashboard: ["Workspace", "Dashboard"],
+            registry: ["Workspace", "Asset registry"],
+            operations: ["Operations", "Assign & return"]
+        };
+        const ops = {
+            assign: {
+                title: "Assign an available asset",
+                sub: "Only assets marked Available can be assigned.",
+                submit: "Assign asset",
+                table: "Active assignments",
+                crumb: "Assign & return",
+                head: ["Asset", "Employee", "Department", "Assigned"],
+                rows: [
+                    ["AST-1042 · MacBook Pro 16", "Su Hlaing", "Finance", "Nov 12"],
+                    ["AST-1011 · ThinkPad T14", "Ko Min", "Operations", "Nov 3"]
+                ]
+            },
+            return: {
+                title: "Record a return",
+                sub: "Close an active assignment and set the next status.",
+                submit: "Record return",
+                table: "Open assignments",
+                crumb: "Assign & return",
+                head: ["Asset", "Holder", "Assigned", "Condition"],
+                rows: [
+                    ["AST-1042 · MacBook Pro 16", "Su Hlaing", "Nov 12", "Good"],
+                    ["AST-1011 · ThinkPad T14", "Ko Min", "Nov 3", "Fair"]
+                ]
+            },
+            transfer: {
+                title: "Transfer an asset",
+                sub: "Change the holder, the location, or both. The previous place is kept on the record.",
+                submit: "Record transfer",
+                table: "Recent transfers",
+                crumb: "Transfers",
+                head: ["Asset", "From", "To", "Date"],
+                rows: [
+                    ["AST-1204 · iPhone 15", "Mandalay", "Yangon HQ", "Nov 11"],
+                    ["AST-1011 · ThinkPad T14", "IT", "Operations", "Nov 3"]
+                ]
+            },
+            request: {
+                title: "Request approvals",
+                sub: "Approve or reject an employee request, then assign a specific asset.",
+                submit: "Save decision",
+                table: "Waiting for approval",
+                crumb: "Requests",
+                head: ["Requester", "Need", "Department", "Opened"],
+                rows: [
+                    ["Aye Chan", "Laptop", "IT", "Nov 12"],
+                    ["Hla Myint", "Monitor", "Finance", "Nov 10"]
+                ]
+            }
+        };
+
+        function showScreen(name) {
+            document.querySelectorAll(".screen").forEach((el) => el.classList.toggle("active", el.id === name));
+            document.querySelectorAll("[data-screen]").forEach((el) => {
+                const on = el.dataset.screen === name && !el.dataset.op;
+                if (el.closest(".screen-switch") || el.classList.contains("nav-link")) {
+                    if (el.dataset.op) {
+                        if (name !== "operations") el.classList.remove("active");
+                        return;
+                    } else if (el.classList.contains("nav-link")) {
+                        el.classList.toggle("active", el.dataset.screen === name);
+                    } else {
+                        el.setAttribute("aria-pressed", String(el.dataset.screen === name));
+                    }
+                }
+            });
+            document.getElementById("screen-caption").textContent = captions[name];
+            const [a, b] = crumbs[name];
+            document.getElementById("crumbs").innerHTML = `<span>${a}</span><span>/</span><b>${b}</b>`;
+        }
+
+        function showOp(name) {
+            const op = ops[name];
+            document.getElementById("op-title").textContent = op.title;
+            document.getElementById("op-sub").textContent = op.sub;
+            document.getElementById("op-submit").textContent = op.submit;
+            document.getElementById("op-table-title").textContent = op.table;
+            document.getElementById("op-head").innerHTML = `<tr>${op.head.map((h) => `<th>${h}</th>`).join("")}</tr>`;
+            document.getElementById("op-body").innerHTML = op.rows.map((row) => `<tr>${row.map((cell) => `<td>${cell}</td>`).join("")}</tr>`).join("");
+            document.querySelectorAll("[data-for]").forEach((field) => {
+                field.hidden = !field.dataset.for.split(" ").includes(name);
+            });
+            document.querySelectorAll(".op-switch button").forEach((btn) => btn.setAttribute("aria-pressed", String(btn.dataset.op === name)));
+            document.getElementById("crumbs").innerHTML = `<span>Operations</span><span>/</span><b>${op.crumb}</b>`;
+            showScreen("operations");
+            document.querySelectorAll(".nav-link[data-op]").forEach((link) => link.classList.toggle("active", link.dataset.op === name));
+            document.querySelectorAll(".nav-link:not([data-op])").forEach((link) => {
+                if (link.dataset.screen === "operations") link.classList.remove("active");
+            });
+        }
+
+        document.body.addEventListener("click", (event) => {
+            const target = event.target.closest("[data-screen], [data-op]");
+            if (!target) return;
+            if (target.dataset.op && (target.closest(".op-switch") || target.classList.contains("nav-link") || target.closest(".attention"))) {
+                showOp(target.dataset.op);
+                return;
+            }
+            if (target.dataset.screen === "operations" && !target.dataset.op) {
+                showOp("assign");
+                return;
+            }
+            if (target.dataset.screen) showScreen(target.dataset.screen);
+        });
+
+        document.getElementById("toggle-form").addEventListener("click", () => {
+            const form = document.getElementById("asset-form");
+            form.hidden = !form.hidden;
+        });
+
+        showOp("assign");
+        showScreen("dashboard");
+    </script>
+</body>
+</html>
