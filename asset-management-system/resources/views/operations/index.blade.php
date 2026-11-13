@@ -10,103 +10,320 @@
 <body>
     <div class="admin-shell">
         <aside class="sidebar" id="sidebar">
-            <a class="brand" href="{{ route(auth()->user()->dashboardRoute() ?? 'login') }}">
-                <span class="brand-mark" aria-hidden="true">▣</span>
+            <a class="brand" href="/" aria-label="Axora home">
+                <span class="brand-mark" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M4.5 7.25 12 3l7.5 4.25v9.5L12 21l-7.5-4.25v-9.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="m4.8 7.4 7.2 4.1 7.2-4.1M12 11.6V21" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+                </span>
                 <span class="brand-copy"><strong>Ax<span>ora</span></strong><small>CONTROL CENTER</small></span>
             </a>
             <nav class="main-nav" aria-label="Main navigation">
                 @if (auth()->user()->role?->slug === 'admin')
                     <div class="sidebar-section-label">WORKSPACE</div>
-                    <a class="nav-link" href="{{ route('admin.dashboard') }}">Dashboard</a>
-                    <a class="nav-link" href="{{ route('admin.dashboard') }}#assets">Asset registry</a>
+                    <a class="nav-link" href="{{ route('admin.dashboard') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/></svg>
+                        <span>Dashboard</span>
+                    </a>
+                    <a class="nav-link" href="{{ route('admin.dashboard') }}#assets">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7.5h16M6.5 4h11a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-11a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M8 11.5h8M8 15.5h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                        <span>Asset registry</span>
+                    </a>
 
                     <div class="sidebar-section-label sidebar-section-spaced">ASSET OPERATIONS</div>
-                    <a class="nav-link {{ $section === 'assignments' ? 'active' : '' }}" @if ($section === 'assignments') aria-current="page" @endif href="{{ route('operations.assignments') }}">Assignments</a>
-                    <a class="nav-link {{ $section === 'returns' ? 'active' : '' }}" @if ($section === 'returns') aria-current="page" @endif href="{{ route('operations.returns') }}">Returns</a>
-                    <a class="nav-link {{ $section === 'transfers' ? 'active' : '' }}" @if ($section === 'transfers') aria-current="page" @endif href="{{ route('operations.transfers') }}">Transfers</a>
-                    <a class="nav-link {{ $section === 'status' ? 'active' : '' }}" @if ($section === 'status') aria-current="page" @endif href="{{ route('operations.status') }}">Status &amp; condition</a>
-                    <a class="nav-link {{ $section === 'requests' ? 'active' : '' }}" @if ($section === 'requests') aria-current="page" @endif href="{{ route('operations.requests') }}">Request approvals</a>
-                    <a class="nav-link {{ $section === 'reports' ? 'active' : '' }}" @if ($section === 'reports') aria-current="page" @endif href="{{ route('operations.reports') }}">Reports</a>
-                    <a class="nav-link {{ $section === 'history' ? 'active' : '' }}" @if ($section === 'history') aria-current="page" @endif href="{{ route('operations.history') }}">Asset history</a>
-                    <a class="nav-link {{ $section === 'purchases' ? 'active' : '' }}" @if ($section === 'purchases') aria-current="page" @endif href="{{ route('operations.purchases') }}">Purchases</a>
-                    <a class="nav-link {{ $section === 'warranties' ? 'active' : '' }}" @if ($section === 'warranties') aria-current="page" @endif href="{{ route('operations.warranties') }}">Warranties</a>
-                    <a class="nav-link {{ $section === 'verification' ? 'active' : '' }}" @if ($section === 'verification') aria-current="page" @endif href="{{ route('operations.verification') }}">Verification</a>
-                    <a class="nav-link {{ $section === 'disposals' ? 'active' : '' }}" @if ($section === 'disposals') aria-current="page" @endif href="{{ route('operations.disposals') }}">Disposals</a>
-                    <a class="nav-link {{ $section === 'maintenance' ? 'active' : '' }}" @if ($section === 'maintenance') aria-current="page" @endif href="{{ route('operations.maintenance') }}">Maintenance</a>
-                    <a class="nav-link {{ $section === 'notifications' ? 'active' : '' }}" @if ($section === 'notifications') aria-current="page" @endif href="{{ route('operations.notifications') }}">Notifications <span class="nav-count">{{ auth()->user()->unreadNotifications()->count() }}</span></a>
-                    <a class="nav-link {{ $section === 'people' ? 'active' : '' }}" @if ($section === 'people') aria-current="page" @endif href="{{ route('operations.people') }}">Employee assets</a>
+                    <a class="nav-link {{ $section === 'assignments' ? 'active' : '' }}" href="{{ route('operations.assignments') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m-8 6H4m0 0l4 4m-4-4l4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span>Assignments</span>
+                    </a>
+                    <a class="nav-link {{ $section === 'returns' ? 'active' : '' }}" href="{{ route('operations.returns') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 8v4l2.5 2.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/></svg>
+                        <span>Returns</span>
+                    </a>
+                    <a class="nav-link {{ $section === 'transfers' ? 'active' : '' }}" href="{{ route('operations.transfers') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m-8 6H4m0 0l4 4m-4-4l4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span>Transfers</span>
+                    </a>
+                    <a class="nav-link {{ $section === 'status' ? 'active' : '' }}" href="{{ route('operations.status') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M12 8v4l2 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                        <span>Status &amp; condition</span>
+                    </a>
+                    <a class="nav-link {{ $section === 'requests' ? 'active' : '' }}" href="{{ route('operations.requests') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span>Request approvals</span>
+                    </a>
+                    <a class="nav-link {{ $section === 'reports' ? 'active' : '' }}" href="{{ route('operations.reports') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span>Reports</span>
+                    </a>
+                    <a class="nav-link {{ $section === 'history' ? 'active' : '' }}" href="{{ route('operations.history') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 8v4l2.5 2.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/></svg>
+                        <span>Asset history</span>
+                    </a>
+                    <a class="nav-link {{ $section === 'purchases' ? 'active' : '' }}" href="{{ route('operations.purchases') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span>Purchases</span>
+                    </a>
+                    <a class="nav-link {{ $section === 'warranties' ? 'active' : '' }}" href="{{ route('operations.warranties') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span>Warranties</span>
+                    </a>
+                    <a class="nav-link {{ $section === 'verification' ? 'active' : '' }}" href="{{ route('operations.verification') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span>Verification</span>
+                    </a>
+                    <a class="nav-link {{ $section === 'disposals' ? 'active' : '' }}" href="{{ route('operations.disposals') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span>Disposals</span>
+                    </a>
+                    <a class="nav-link {{ $section === 'maintenance' ? 'active' : '' }}" href="{{ route('operations.maintenance') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span>Maintenance</span>
+                    </a>
+                    <a class="nav-link {{ $section === 'notifications' ? 'active' : '' }}" href="{{ route('operations.notifications') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span>Notifications</span><span class="nav-count">{{ auth()->user()->unreadNotifications()->count() }}</span>
+                    </a>
+                    <a class="nav-link {{ $section === 'people' ? 'active' : '' }}" href="{{ route('operations.people') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 1 1-4 0 2 2 0 014 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span>Employee assets</span>
+                    </a>
 
                     <div class="sidebar-section-label sidebar-section-spaced">MANAGE</div>
-                    <a class="nav-link" href="{{ route('admin.categories') }}">Categories</a>
-                    <a class="nav-link" href="{{ route('admin.locations') }}">Locations</a>
-                    <a class="nav-link" href="{{ route('admin.branches') }}">Branches</a>
-                    <a class="nav-link" href="{{ route('admin.departments') }}">Departments</a>
-                    <a class="nav-link" href="{{ route('admin.users') }}">User roles</a>
-                    <a class="nav-link" href="{{ route('admin.maintenance') }}">Maintenance</a>
-                    <a class="nav-link" href="{{ route('admin.settings') }}">Settings</a>
+                    <a class="nav-link" href="{{ route('admin.categories') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="m3 12 9 5 9-5M3 16l9 5 9-5" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+                        <span>Categories</span>
+                    </a>
+                    <a class="nav-link" href="{{ route('admin.locations') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M19 10.1c0 5-7 10.4-7 10.4S5 15.1 5 10.1a7 7 0 1 1 14 0Z" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="10" r="2.3" stroke="currentColor" stroke-width="1.7"/></svg>
+                        <span>Locations</span>
+                    </a>
+                    <a class="nav-link" href="{{ route('admin.branches') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m-1 4h1m3-8h1m-1 4h1m-1 4h1m-5 11v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span>Branches</span>
+                    </a>
+                    <a class="nav-link" href="{{ route('admin.departments') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 1 1-4 0 2 2 0 014 0zM7 10a2 2 0 1 1-4 0 2 2 0 014 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span>Departments</span>
+                    </a>
+                    <a class="nav-link" href="{{ route('admin.users') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="9" cy="8" r="3.2" stroke="currentColor" stroke-width="1.7"/><path d="M3.5 20v-1.6a5.5 5.5 0 0 1 11 0V20M16 5.2a3.2 3.2 0 0 1 0 6.2m1.3 3.7a5.3 5.3 0 0 1 3.2 4.9V20" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                        <span>User roles</span>
+                    </a>
+                    <a class="nav-link" href="{{ route('admin.maintenance') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M14.2 6.1a5 5 0 0 0-6.3 6.3L3.7 16.6a2.1 2.1 0 0 0 3 3l4.2-4.2a5 5 0 0 0 6.3-6.3l-3 3-3.1-3.1 3.1-2.9Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span>Maintenance</span>
+                    </a>
+                    <a class="nav-link" href="{{ route('admin.settings') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.7"/><path d="m19.4 15 .1.1a1.8 1.8 0 1 1-2.5 2.5l-.1-.1a1.8 1.8 0 0 0-3 .9v.2a1.8 1.8 0 1 1-3.6 0v-.2a1.8 1.8 0 0 0-3-.9l-.1.1a1.8 1.8 0 1 1-2.5-2.5l.1-.1a1.8 1.8 0 0 0-.9-3h-.2a1.8 1.8 0 1 1 0-3.6h.2a1.8 1.8 0 0 0 .9-3l-.1-.1a1.8 1.8 0 1 1 2.5-2.5l.1.1a1.8 1.8 0 0 0 3-.9v-.2a1.8 1.8 0 1 1 3.6 0v.2a1.8 1.8 0 0 0 3 .9l.1-.1a1.8 1.8 0 1 1 2.5 2.5l-.1.1a1.8 1.8 0 0 0 .9 3h.2a1.8 1.8 0 1 1 0 3.6h-.2a1.8 1.8 0 0 0-.9 3Z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span>Settings</span>
+                    </a>
                 @elseif (auth()->user()->role?->slug === 'employee')
-                    <div class="sidebar-section-label">MY WORKSPACE</div>
-                    <a class="nav-link {{ $section === 'my-requests' ? '' : 'active' }}" href="{{ route('employee.dashboard') }}">My dashboard</a>
-                    <a class="nav-link {{ $section === 'my-requests' ? 'active' : '' }}" @if ($section === 'my-requests') aria-current="page" @endif href="{{ route('employee.requests') }}">Asset requests</a>
-                    <a class="nav-link {{ $section === 'notifications' ? 'active' : '' }}" @if ($section === 'notifications') aria-current="page" @endif href="{{ route('employee.notifications') }}">Notifications <span class="nav-count">{{ auth()->user()->unreadNotifications()->count() }}</span></a>
+                    <div class="sidebar-section-label">WORKSPACE</div>
+                    <a class="nav-link {{ $section === 'my-requests' ? '' : 'active' }}" href="{{ route('employee.dashboard') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/></svg>
+                        <span>Dashboard</span>
+                    </a>
+                    <a class="nav-link {{ $section === 'my-requests' ? 'active' : '' }}" href="{{ route('employee.requests') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span>Asset requests</span>
+                    </a>
+                    <a class="nav-link {{ $section === 'notifications' ? 'active' : '' }}" href="{{ route('employee.notifications') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span>Notifications</span><span class="nav-count">{{ auth()->user()->unreadNotifications()->count() }}</span>
+                    </a>
                 @elseif (auth()->user()->role?->slug === 'hr_admin_staff')
-                    <div class="sidebar-section-label">HR WORKSPACE</div>
-                    <a class="nav-link {{ $section === 'people' ? 'active' : '' }}" @if ($section === 'people') aria-current="page" @endif href="{{ route('operations.people') }}">Employee assets</a>
-                    <a class="nav-link {{ $section === 'notifications' ? 'active' : '' }}" @if ($section === 'notifications') aria-current="page" @endif href="{{ route('operations.notifications') }}">Notifications</a>
+                    <div class="sidebar-section-label">WORKSPACE</div>
+                    <a class="nav-link {{ $section === 'people' ? 'active' : '' }}" href="{{ route('operations.people') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 1 1-4 0 2 2 0 014 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span>Employee assets</span>
+                    </a>
+                    <a class="nav-link {{ $section === 'notifications' ? 'active' : '' }}" href="{{ route('operations.notifications') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span>Notifications</span>
+                    </a>
                 @elseif (auth()->user()->role?->slug === 'management_viewer')
-                    <div class="sidebar-section-label">VIEW WORKSPACE</div>
-                    <a class="nav-link {{ $section === 'reports' ? 'active' : '' }}" @if ($section === 'reports') aria-current="page" @endif href="{{ route('operations.reports') }}">Reports</a>
-                    <a class="nav-link {{ $section === 'notifications' ? 'active' : '' }}" @if ($section === 'notifications') aria-current="page" @endif href="{{ route('operations.notifications') }}">Notifications</a>
+                    <div class="sidebar-section-label">WORKSPACE</div>
+                    <a class="nav-link {{ $section === 'reports' ? 'active' : '' }}" href="{{ route('operations.reports') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span>Reports</span>
+                    </a>
+                    <a class="nav-link {{ $section === 'notifications' ? 'active' : '' }}" href="{{ route('operations.notifications') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span>Notifications</span>
+                    </a>
                 @elseif (auth()->user()->role?->slug === 'it_technician')
-                    <div class="sidebar-section-label">IT WORKSPACE</div>
-                    <a class="nav-link {{ $section === 'maintenance' ? 'active' : '' }}" @if ($section === 'maintenance') aria-current="page" @endif href="{{ route('operations.maintenance') }}">Maintenance</a>
-                    <a class="nav-link {{ $section === 'status' ? 'active' : '' }}" @if ($section === 'status') aria-current="page" @endif href="{{ route('operations.status') }}">Status &amp; condition</a>
-                    <a class="nav-link {{ $section === 'history' ? 'active' : '' }}" @if ($section === 'history') aria-current="page" @endif href="{{ route('operations.history') }}">Asset history</a>
-                    <a class="nav-link {{ $section === 'notifications' ? 'active' : '' }}" @if ($section === 'notifications') aria-current="page" @endif href="{{ route('operations.notifications') }}">Notifications</a>
+                    <div class="sidebar-section-label">WORKSPACE</div>
+                    <a class="nav-link {{ $section === 'maintenance' ? 'active' : '' }}" href="{{ route('operations.maintenance') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span>Maintenance</span>
+                    </a>
+                    <a class="nav-link {{ $section === 'status' ? 'active' : '' }}" href="{{ route('operations.status') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M12 8v4l2 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                        <span>Status &amp; condition</span>
+                    </a>
+                    <a class="nav-link {{ $section === 'history' ? 'active' : '' }}" href="{{ route('operations.history') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 8v4l2.5 2.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/></svg>
+                        <span>Asset history</span>
+                    </a>
+                    <a class="nav-link {{ $section === 'notifications' ? 'active' : '' }}" href="{{ route('operations.notifications') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span>Notifications</span>
+                    </a>
                 @elseif (auth()->user()->role?->slug === 'department_manager')
-                    <div class="sidebar-section-label">DEPARTMENT WORKSPACE</div>
-                    <a class="nav-link" href="{{ route('manager.dashboard') }}">Dashboard</a>
-                    <a class="nav-link {{ $section === 'assignments' ? 'active' : '' }}" href="{{ route('operations.assignments') }}">Assignments</a>
-                    <a class="nav-link {{ $section === 'returns' ? 'active' : '' }}" href="{{ route('operations.returns') }}">Returns</a>
-                    <a class="nav-link {{ $section === 'transfers' ? 'active' : '' }}" href="{{ route('operations.transfers') }}">Transfers</a>
-                    <a class="nav-link {{ $section === 'status' ? 'active' : '' }}" href="{{ route('operations.status') }}">Status</a>
-                    <a class="nav-link {{ $section === 'requests' ? 'active' : '' }}" href="{{ route('operations.requests') }}">Requests</a>
-                    <a class="nav-link {{ $section === 'reports' ? 'active' : '' }}" href="{{ route('operations.reports') }}">Reports</a>
-                    <a class="nav-link {{ $section === 'history' ? 'active' : '' }}" href="{{ route('operations.history') }}">History</a>
-                    <a class="nav-link {{ $section === 'notifications' ? 'active' : '' }}" href="{{ route('operations.notifications') }}">Notifications</a>
+                    <div class="sidebar-section-label">WORKSPACE</div>
+                    <a class="nav-link" href="{{ route('manager.dashboard') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/></svg>
+                        <span>Dashboard</span>
+                    </a>
+                    <div class="sidebar-section-label sidebar-section-spaced">ASSET OPERATIONS</div>
+                    <a class="nav-link {{ $section === 'assignments' ? 'active' : '' }}" href="{{ route('operations.assignments') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m-8 6H4m0 0l4 4m-4-4l4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span>Assignments</span>
+                    </a>
+                    <a class="nav-link {{ $section === 'returns' ? 'active' : '' }}" href="{{ route('operations.returns') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 8v4l2.5 2.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/></svg>
+                        <span>Returns</span>
+                    </a>
+                    <a class="nav-link {{ $section === 'transfers' ? 'active' : '' }}" href="{{ route('operations.transfers') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m-8 6H4m0 0l4 4m-4-4l4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span>Transfers</span>
+                    </a>
+                    <a class="nav-link {{ $section === 'status' ? 'active' : '' }}" href="{{ route('operations.status') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M12 8v4l2 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                        <span>Status</span>
+                    </a>
+                    <a class="nav-link {{ $section === 'requests' ? 'active' : '' }}" href="{{ route('operations.requests') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span>Requests</span>
+                    </a>
+                    <a class="nav-link {{ $section === 'reports' ? 'active' : '' }}" href="{{ route('operations.reports') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span>Reports</span>
+                    </a>
+                    <a class="nav-link {{ $section === 'history' ? 'active' : '' }}" href="{{ route('operations.history') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 8v4l2.5 2.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/></svg>
+                        <span>History</span>
+                    </a>
+                    <a class="nav-link {{ $section === 'notifications' ? 'active' : '' }}" href="{{ route('operations.notifications') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span>Notifications</span>
+                    </a>
                 @else
                     <div class="sidebar-section-label">WORKSPACE</div>
-                    <a class="nav-link" href="{{ route('manager.dashboard') }}">Dashboard</a>
+                    <a class="nav-link" href="{{ route('manager.dashboard') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/></svg>
+                        <span>Dashboard</span>
+                    </a>
                     <div class="sidebar-section-label sidebar-section-spaced">ASSET OPERATIONS</div>
-                    <a class="nav-link {{ $section === 'assignments' ? 'active' : '' }}" @if ($section === 'assignments') aria-current="page" @endif href="{{ route('operations.assignments') }}">Assignments</a>
-                    <a class="nav-link {{ $section === 'returns' ? 'active' : '' }}" @if ($section === 'returns') aria-current="page" @endif href="{{ route('operations.returns') }}">Returns</a>
-                    <a class="nav-link {{ $section === 'transfers' ? 'active' : '' }}" @if ($section === 'transfers') aria-current="page" @endif href="{{ route('operations.transfers') }}">Transfers</a>
-                    <a class="nav-link {{ $section === 'status' ? 'active' : '' }}" @if ($section === 'status') aria-current="page" @endif href="{{ route('operations.status') }}">Status &amp; condition</a>
-                    <a class="nav-link {{ $section === 'requests' ? 'active' : '' }}" @if ($section === 'requests') aria-current="page" @endif href="{{ route('operations.requests') }}">Request approvals</a>
-                    <a class="nav-link {{ $section === 'purchases' ? 'active' : '' }}" @if ($section === 'purchases') aria-current="page" @endif href="{{ route('operations.purchases') }}">Purchases</a>
-                    <a class="nav-link {{ $section === 'warranties' ? 'active' : '' }}" @if ($section === 'warranties') aria-current="page" @endif href="{{ route('operations.warranties') }}">Warranties</a>
-                    <a class="nav-link {{ $section === 'verification' ? 'active' : '' }}" @if ($section === 'verification') aria-current="page" @endif href="{{ route('operations.verification') }}">Verification</a>
-                    <a class="nav-link {{ $section === 'disposals' ? 'active' : '' }}" @if ($section === 'disposals') aria-current="page" @endif href="{{ route('operations.disposals') }}">Disposals</a>
-                    <a class="nav-link {{ $section === 'maintenance' ? 'active' : '' }}" @if ($section === 'maintenance') aria-current="page" @endif href="{{ route('operations.maintenance') }}">Maintenance</a>
-                    <a class="nav-link {{ $section === 'reports' ? 'active' : '' }}" @if ($section === 'reports') aria-current="page" @endif href="{{ route('operations.reports') }}">Reports</a>
-                    <a class="nav-link {{ $section === 'history' ? 'active' : '' }}" @if ($section === 'history') aria-current="page" @endif href="{{ route('operations.history') }}">Asset history</a>
-                    <a class="nav-link {{ $section === 'notifications' ? 'active' : '' }}" @if ($section === 'notifications') aria-current="page" @endif href="{{ route('operations.notifications') }}">Notifications <span class="nav-count">{{ auth()->user()->unreadNotifications()->count() }}</span></a>
+                    <a class="nav-link {{ $section === 'assignments' ? 'active' : '' }}" href="{{ route('operations.assignments') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m-8 6H4m0 0l4 4m-4-4l4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span>Assignments</span>
+                    </a>
+                    <a class="nav-link {{ $section === 'returns' ? 'active' : '' }}" href="{{ route('operations.returns') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 8v4l2.5 2.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/></svg>
+                        <span>Returns</span>
+                    </a>
+                    <a class="nav-link {{ $section === 'transfers' ? 'active' : '' }}" href="{{ route('operations.transfers') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m-8 6H4m0 0l4 4m-4-4l4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span>Transfers</span>
+                    </a>
+                    <a class="nav-link {{ $section === 'status' ? 'active' : '' }}" href="{{ route('operations.status') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M12 8v4l2 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                        <span>Status &amp; condition</span>
+                    </a>
+                    <a class="nav-link {{ $section === 'requests' ? 'active' : '' }}" href="{{ route('operations.requests') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span>Request approvals</span>
+                    </a>
+                    <a class="nav-link {{ $section === 'purchases' ? 'active' : '' }}" href="{{ route('operations.purchases') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span>Purchases</span>
+                    </a>
+                    <a class="nav-link {{ $section === 'warranties' ? 'active' : '' }}" href="{{ route('operations.warranties') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span>Warranties</span>
+                    </a>
+                    <a class="nav-link {{ $section === 'verification' ? 'active' : '' }}" href="{{ route('operations.verification') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span>Verification</span>
+                    </a>
+                    <a class="nav-link {{ $section === 'disposals' ? 'active' : '' }}" href="{{ route('operations.disposals') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span>Disposals</span>
+                    </a>
+                    <a class="nav-link {{ $section === 'maintenance' ? 'active' : '' }}" href="{{ route('operations.maintenance') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span>Maintenance</span>
+                    </a>
+                    <a class="nav-link {{ $section === 'reports' ? 'active' : '' }}" href="{{ route('operations.reports') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span>Reports</span>
+                    </a>
+                    <a class="nav-link {{ $section === 'history' ? 'active' : '' }}" href="{{ route('operations.history') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 8v4l2.5 2.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/></svg>
+                        <span>Asset history</span>
+                    </a>
+                    <a class="nav-link {{ $section === 'notifications' ? 'active' : '' }}" href="{{ route('operations.notifications') }}">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span>Notifications</span><span class="nav-count">{{ auth()->user()->unreadNotifications()->count() }}</span>
+                    </a>
                 @endif
             </nav>
             <div class="sidebar-bottom">
                 <div class="sidebar-user">
                     <span class="user-avatar">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</span>
-                    <span class="user-details"><strong>{{ auth()->user()->name }}</strong><small>{{ auth()->user()->role?->name }}</small></span>
-                    <form method="POST" action="{{ route('logout') }}">@csrf<button class="view-switch" type="submit">Sign out</button></form>
+                    <div class="user-details">
+                        <strong>{{ auth()->user()->name }}</strong>
+                        <small>{{ auth()->user()->role?->name }}</small>
+                    </div>
                 </div>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button class="logout-button" type="submit">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        Sign out
+                    </button>
+                </form>
             </div>
         </aside>
 
         <main class="main-panel">
             <header class="topbar">
-                <button class="icon-button menu-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
-                <div class="breadcrumbs"><span>Asset operations</span><span class="breadcrumb-slash">/</span><strong>{{ $pageTitle }}</strong></div>
-                <div class="topbar-actions"><span class="topbar-user">{{ auth()->user()->name }}</span></div>
+                <div class="topbar-left">
+                    <button class="icon-button menu-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                    </button>
+                    <div class="breadcrumbs">
+                        <span>Asset operations</span>
+                        <span class="breadcrumb-slash">/</span>
+                        <strong>{{ $pageTitle }}</strong>
+                    </div>
+                </div>
+
+                <div class="topbar-center">
+                    <div class="global-search">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><path d="m21 21-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                        <input type="text" placeholder="Search {{ strtolower($pageTitle) }}... (⌘K)" aria-label="Global search">
+                    </div>
+                </div>
+
+                <div class="topbar-right">
+                    <div class="topbar-actions">
+                        <button class="icon-button help-button" type="button" aria-label="Help">
+                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3m0 4h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                        </button>
+                        <button class="icon-button notification-button" type="button" aria-label="Notifications">
+                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            <span class="notification-dot"></span>
+                        </button>
+                        <div class="topbar-divider"></div>
+                        <div class="user-profile-trigger">
+                            <div class="user-info">
+                                <span class="user-name">{{ auth()->user()->name }}</span>
+                                <span class="user-role">{{ auth()->user()->role?->name }}</span>
+                            </div>
+                            <span class="user-avatar topbar-avatar">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</span>
+                        </div>
+                    </div>
+                </div>
             </header>
             <div class="page-content management-page">
                 <section class="page-heading">
@@ -197,7 +414,7 @@
                     </section>
                 @endif
 
-                @if ($section === 'returns')
+                @if (in_array($section, ['assignments', 'returns'], true))
                     <section class="management-section">
                         <div class="management-section-heading"><div><h2>Record an asset return</h2><p>Close an active assignment and set the asset’s next status.</p></div></div>
                         <div class="management-table-wrap"><table class="management-table">

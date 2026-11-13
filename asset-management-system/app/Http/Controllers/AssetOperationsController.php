@@ -46,7 +46,7 @@ class AssetOperationsController extends Controller
         $this->authorizeSection($request->user(), $section);
 
         $titles = [
-            'assignments' => 'Asset assignments',
+            'assignments' => 'Assignments & returns',
             'returns' => 'Asset returns',
             'transfers' => 'Asset transfers',
             'status' => 'Asset status & condition',
@@ -79,6 +79,12 @@ class AssetOperationsController extends Controller
                 'assignments' => AssetAssignment::query()->with(['asset', 'employee', 'department', 'assignedBy', 'assetReturn'])
                     ->when($this->isDepartmentManager($request->user()), fn (Builder $query) => $query->where('department_id', $this->departmentId($request->user())))
                     ->latest('assigned_at')->paginate(15),
+                'openAssignments' => AssetAssignment::query()->with(['asset', 'employee', 'department'])
+                    ->when($this->isDepartmentManager($request->user()), fn (Builder $query) => $query->where('department_id', $this->departmentId($request->user())))
+                    ->whereNull('closed_at')->latest('assigned_at')->get(),
+                'returns' => AssetReturn::query()->with(['asset', 'assetAssignment.employee', 'receivedBy'])
+                    ->when($this->isDepartmentManager($request->user()), fn (Builder $query) => $query->whereHas('assetAssignment', fn (Builder $assignment) => $assignment->where('department_id', $this->departmentId($request->user()))))
+                    ->latest('returned_at')->paginate(15),
             ],
             'returns' => [
                 'openAssignments' => AssetAssignment::query()->with(['asset', 'employee', 'department'])

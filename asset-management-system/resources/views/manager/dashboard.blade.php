@@ -10,38 +10,48 @@
 <body>
     <div class="admin-shell manager-dashboard">
         <aside class="sidebar" id="sidebar">
-            <a class="brand" href="{{ route('manager.dashboard') }}" aria-label="Axora home">
+            <a class="brand" href="/" aria-label="Axora home">
                 <span class="brand-mark" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="none"><path d="M4.5 7.25 12 3l7.5 4.25v9.5L12 21l-7.5-4.25v-9.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="m4.8 7.4 7.2 4.1 7.2-4.1M12 11.6V21" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
                 </span>
                 <span class="brand-copy"><strong>Ax<span>ora</span></strong><small>CONTROL CENTER</small></span>
             </a>
 
-            <div class="sidebar-section-label">MANAGER WORKSPACE</div>
             <nav class="main-nav" aria-label="Manager navigation">
-                <a class="nav-link active" href="#overview" aria-current="page">
+                <div class="sidebar-section-label">WORKSPACE</div>
+                <a class="nav-link active" href="{{ route('manager.dashboard') }}" aria-current="page">
                     <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/></svg>
                     <span>Dashboard</span>
                 </a>
-                <a class="nav-link" href="{{ route('operations.assignments') }}">
-                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 5H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3M8 3h8v4H8zM7 12h10M7 16h7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    <span>Asset assignments</span><span class="nav-count">980</span>
+                <div class="sidebar-section-label sidebar-section-spaced">ASSET OPERATIONS</div>
+                <a class="nav-link" href="{{ route('operations.requests') }}">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <span>Request approvals</span>
                 </a>
-                <a class="nav-link" href="{{ route('operations.returns') }}">
-                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 8v4l2.5 2.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/></svg>
-                    <span>Return / transfer</span><span class="nav-dot"></span>
+                <a class="nav-link" href="{{ route('operations.purchases') }}">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <span>Purchases</span>
                 </a>
-                <a class="nav-link" href="{{ route('operations.transfers') }}">
-                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 10h1m4 0h1m-6 4h1m4 0h1m-5 7v-4h2v4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    <span>Dept assets</span>
+                <a class="nav-link" href="{{ route('operations.warranties') }}">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <span>Warranties</span>
                 </a>
-                <a class="nav-link" href="{{ route('operations.requests') }}"><span>Request approvals</span></a>
-                <a class="nav-link" href="{{ route('operations.purchases') }}"><span>Purchases</span></a>
-                <a class="nav-link" href="{{ route('operations.warranties') }}"><span>Warranties</span></a>
-                <a class="nav-link" href="{{ route('operations.verification') }}"><span>Verification</span></a>
-                <a class="nav-link" href="{{ route('operations.disposals') }}"><span>Disposals</span></a>
-                <a class="nav-link" href="{{ route('operations.maintenance') }}"><span>Maintenance</span></a>
-                <a class="nav-link" href="{{ route('operations.notifications') }}"><span>Notifications</span><span class="nav-count">{{ auth()->user()->unreadNotifications()->count() }}</span></a>
+                <a class="nav-link" href="{{ route('operations.verification') }}">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <span>Verification</span>
+                </a>
+                <a class="nav-link" href="{{ route('operations.disposals') }}">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <span>Disposals</span>
+                </a>
+                <a class="nav-link" href="{{ route('operations.maintenance') }}">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <span>Maintenance</span>
+                </a>
+                <a class="nav-link" href="{{ route('operations.notifications') }}">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <span>Notifications</span><span class="nav-count">{{ auth()->user()->unreadNotifications()->count() }}</span>
+                </a>
                 <a class="nav-link" href="{{ route('operations.reports') }}">
                     <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 19V5m0 14h17M8 15l4-4 3 2 5-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     <span>Reports</span>
@@ -55,31 +65,59 @@
             <div class="sidebar-bottom">
                 <div class="sidebar-user">
                     <span class="user-avatar">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</span>
-                    <span class="user-details"><strong>{{ auth()->user()->name }}</strong><small>Manager · HR / IT</small></span>
-                    <button class="icon-button sidebar-more" type="button" aria-label="Account options">···</button>
+                    <div class="user-details">
+                        <strong>{{ auth()->user()->name }}</strong>
+                        <small>Manager · HR / IT</small>
+                    </div>
                 </div>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button class="logout-button" type="submit">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        Sign out
+                    </button>
+                </form>
             </div>
         </aside>
 
         <main class="main-panel" id="overview">
             <header class="topbar">
-                <button class="icon-button menu-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">
-                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-                </button>
-                <div class="breadcrumbs"><span>Workspace</span><span class="breadcrumb-slash">/</span><strong>Manager dashboard</strong></div>
-                <div class="topbar-actions">
-                    <span class="topbar-date"><span class="online-dot"></span> System operational</span>
-                    <button class="icon-button notification-button" type="button" aria-label="Notifications">
-                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                        <span class="notification-dot"></span>
+                <div class="topbar-left">
+                    <button class="icon-button menu-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
                     </button>
-                    <span class="topbar-divider"></span>
-                    <span class="topbar-user">{{ auth()->user()->name }}</span>
-                    <span class="user-avatar topbar-avatar">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</span>
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button class="view-switch" type="submit">Sign out</button>
-                    </form>
+                    <div class="breadcrumbs">
+                        <span>Workspace</span>
+                        <span class="breadcrumb-slash">/</span>
+                        <strong>Dashboard</strong>
+                    </div>
+                </div>
+
+                <div class="topbar-center">
+                    <div class="global-search">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><path d="m21 21-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                        <input type="text" placeholder="Search assets, requests... (⌘K)" aria-label="Global search">
+                    </div>
+                </div>
+
+                <div class="topbar-right">
+                    <div class="topbar-actions">
+                        <button class="icon-button help-button" type="button" aria-label="Help">
+                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3m0 4h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                        </button>
+                        <button class="icon-button notification-button" type="button" aria-label="Notifications">
+                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            <span class="notification-dot"></span>
+                        </button>
+                        <div class="topbar-divider"></div>
+                        <div class="user-profile-trigger">
+                            <div class="user-info">
+                                <span class="user-name">{{ auth()->user()->name }}</span>
+                                <span class="user-role">Manager</span>
+                            </div>
+                            <span class="user-avatar topbar-avatar">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</span>
+                        </div>
+                    </div>
                 </div>
             </header>
 
