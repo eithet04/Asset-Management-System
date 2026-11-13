@@ -317,10 +317,13 @@
         </main>
     </div>
 
-    <div class="modal-backdrop" id="asset-modal" data-update-url="{{ route('admin.assets.update', ['asset' => '__ASSET__']) }}" @if ($errors->any()) @else hidden @endif>
+    <div class="modal-backdrop" id="asset-modal" data-update-url="{{ route('admin.assets.update', ['asset' => '__ASSET__']) }}" @if ($errors->any() || session('asset_form_success')) @else hidden @endif>
         <section class="asset-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
             <div class="modal-heading"><div><p class="eyebrow">ASSET REGISTRY</p><h2 id="modal-title">Add a new asset</h2></div><button class="icon-button modal-close" type="button" aria-label="Close dialog" data-close-modal>×</button></div>
             <p class="modal-description" data-modal-description>Enter the details below to add an item to your registry.</p>
+            @if (session('asset_form_success'))
+                <p class="management-alert" role="status" aria-live="polite" data-asset-form-success>{{ session('asset_form_success') }}</p>
+            @endif
             <form id="asset-form" method="POST" action="{{ route('admin.assets.store') }}" data-create-url="{{ route('admin.assets.store') }}">
                 @csrf
                 <input type="hidden" name="_method" value="PUT" data-edit-method @if (old('_method') !== 'PUT') disabled @endif>

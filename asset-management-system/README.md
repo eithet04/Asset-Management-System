@@ -30,9 +30,10 @@ php artisan serve
 
 The `.env.example` uses PostgreSQL. Create the database and set its connection
 values in the ignored `.env` file before migrating. The seeder creates
-application roles and starter asset categories; it does not create a shared
-demo user. Register with a Gmail address and Myanmar mobile number, verify the
-address, then promote the account to an administrator:
+application roles, starter categories, and synthetic demo registry records only
+in local and testing environments; it does not create a shared demo user.
+Register with a Gmail address and Myanmar mobile number, verify the address,
+then promote the account to an administrator:
 
 ```powershell
 php artisan users:assign-role your-email@gmail.com admin
@@ -108,8 +109,10 @@ records:
    same database connection details. Share credentials only through a secure
    secret channel, use TLS, and restrict database network access to trusted
    hosts; do not expose the database to the public internet.
-3. Deploy or pull the application code, then run `php artisan migrate --seed`
-   against that shared database.
+3. Deploy or pull the application code, then run
+   `php artisan migrate --seed --force` against that shared database with
+   `APP_ENV=production`. Standard roles and categories are seeded, but
+   synthetic demo registry records are skipped.
 4. Each teammate signs in with their own account. Do not copy `.env` or
    production database credentials into Git.
 

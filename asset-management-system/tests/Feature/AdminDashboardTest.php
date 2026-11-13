@@ -10,6 +10,7 @@ use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 class AdminDashboardTest extends TestCase
@@ -43,13 +44,13 @@ class AdminDashboardTest extends TestCase
     {
         $admin = $this->createUserWithRole(User::ROLE_ADMIN);
 
-        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-11 02:00:00', 'UTC'));
+        $this->travelTo(Carbon::parse('2026-11-11 02:00:00', 'UTC'));
         $this->actingAs($admin)->get(route('admin.dashboard'))->assertSeeText('Good morning, '.$admin->name);
 
-        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-11 06:00:00', 'UTC'));
+        $this->travelTo(Carbon::parse('2026-11-11 06:00:00', 'UTC'));
         $this->actingAs($admin)->get(route('admin.dashboard'))->assertSeeText('Good afternoon, '.$admin->name);
 
-        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-11 12:00:00', 'UTC'));
+        $this->travelTo(Carbon::parse('2026-11-11 12:00:00', 'UTC'));
         $this->actingAs($admin)->get(route('admin.dashboard'))->assertSeeText('Good evening, '.$admin->name);
 
         $this->travelBack();
@@ -116,6 +117,35 @@ class AdminDashboardTest extends TestCase
             ->assertViewHas('recentActivities', fn ($activities) => $activities->count() === 1);
     }
 
+    public function test_dashboard_shows_only_the_three_most_recent_non_warranty_activities(): void
+    {
+        $admin = $this->createUserWithRole(User::ROLE_ADMIN);
+
+        foreach (range(1, 4) as $index) {
+            AssetActivity::query()->create([
+                'action_type' => 'updated',
+                'description' => "Dashboard activity {$index}.",
+                'occurred_at' => "2025-01-01 12:00:0{$index}",
+            ]);
+        }
+
+        AssetActivity::query()->create([
+            'action_type' => 'warranty_recorded',
+            'description' => 'Warranty activity should not appear.',
+            'occurred_at' => '2025-01-01 12:00:05',
+        ]);
+
+        $response = $this->actingAs($admin)->get(route('admin.dashboard'));
+
+        $response->assertOk()
+            ->assertSeeText('Dashboard activity 4.')
+            ->assertSeeText('Dashboard activity 3.')
+            ->assertSeeText('Dashboard activity 2.')
+            ->assertDontSeeText('Dashboard activity 1.')
+            ->assertDontSeeText('Warranty activity should not appear.')
+            ->assertViewHas('recentActivities', fn ($activities) => $activities->count() === 3);
+    }
+
     public function test_admin_can_register_an_asset_and_see_it_on_the_dashboard(): void
     {
         $admin = $this->createUserWithRole(User::ROLE_ADMIN);
@@ -133,8 +163,8 @@ class AdminDashboardTest extends TestCase
             'status' => 'available',
         ]);
 
-        $response->assertRedirect(route('admin.dashboard'));
-        $response->assertSessionHas('status');
+        $response->assertRedirect(route('admin.dashboard'))
+            ->assertSessionHas('asset_form_success', 'Asset added to the registry.');
         $this->assertDatabaseHas('assets', [
             'asset_code' => 'AST-TEST-1',
             'name' => 'Test laptop',
@@ -155,6 +185,9 @@ class AdminDashboardTest extends TestCase
             ->assertOk()
             ->assertSeeText('Test laptop')
             ->assertSeeText('AST-TEST-1')
+            ->assertSee('data-asset-form-success', false)
+            ->assertSeeText('Asset added to the registry.')
+            ->assertDontSee('toast is-visible', false)
             ->assertSeeText('Total Assets')
             ->assertSeeText('1');
 
@@ -211,7 +244,7 @@ class AdminDashboardTest extends TestCase
                 'condition' => 'fair',
             ])
             ->assertRedirect(route('admin.dashboard'))
-            ->assertSessionHas('status', 'Asset details updated.');
+            ->assertSessionHas('asset_form_success', 'Asset details updated.');
 
         $this->assertDatabaseHas('assets', [
             'id' => $asset->id,
@@ -229,6 +262,9 @@ class AdminDashboardTest extends TestCase
         $this->actingAs($admin)
             ->get(route('admin.dashboard'))
             ->assertOk()
+            ->assertSee('data-asset-form-success', false)
+            ->assertSeeText('Asset details updated.')
+            ->assertSee('name="_method" value="PUT"', false)
             ->assertSee('data-edit-asset', false)
             ->assertSeeText('Edit');
     }

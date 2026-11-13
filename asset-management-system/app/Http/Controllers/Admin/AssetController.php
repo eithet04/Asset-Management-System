@@ -64,7 +64,7 @@ class AssetController extends Controller
                 ->with(['asset', 'user'])
                 ->where('action_type', 'not like', 'warranty%')
                 ->latest('occurred_at')
-                ->limit(8)
+                ->limit(3)
                 ->get(),
             'filters' => $validated,
         ]);
@@ -90,7 +90,7 @@ class AssetController extends Controller
         });
 
         return to_route('admin.dashboard')
-            ->with('status', 'Asset added to the registry.');
+            ->with('asset_form_success', 'Asset added to the registry.');
     }
 
     public function import(Request $request, ImportAssetsFromCsv $importAssets): RedirectResponse
@@ -203,7 +203,8 @@ class AssetController extends Controller
         });
 
         return to_route('admin.dashboard')
-            ->with('status', 'Asset details updated.');
+            ->withInput([...$validated, '_method' => 'PUT', 'asset_id' => $asset->id])
+            ->with('asset_form_success', 'Asset details updated.');
     }
 
     /**

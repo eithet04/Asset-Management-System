@@ -125,6 +125,7 @@ function openAssetEditor(button) {
     const method = assetForm.elements.namedItem('_method');
     const assetId = assetForm.elements.namedItem('asset_id');
 
+    document.querySelector('[data-asset-form-success]')?.setAttribute('hidden', '');
     assetForm.querySelectorAll('option[data-edit-option]').forEach((option) => option.remove());
     assetForm.reset();
     assetForm.action = editing
