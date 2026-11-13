@@ -347,29 +347,6 @@
                     </div>
                 @endif
 
-                @if (in_array(auth()->user()->role?->slug, ['admin', 'manager', 'asset_controller'], true) && $section !== 'my-requests')
-                    <nav class="management-tabs" aria-label="Asset operations pages">
-                        <a href="{{ route('operations.assignments') }}">Assignments</a>
-                        <a href="{{ route('operations.returns') }}">Returns</a>
-                        <a href="{{ route('operations.transfers') }}">Transfers</a>
-                        <a href="{{ route('operations.status') }}">Status</a>
-                        <a href="{{ route('operations.requests') }}">Requests</a>
-                        <a href="{{ route('operations.reports') }}">Reports</a>
-                        <a href="{{ route('operations.history') }}">History</a>
-                        <a href="{{ route('operations.purchases') }}">Purchases</a>
-                        <a href="{{ route('operations.warranties') }}">Warranties</a>
-                        <a href="{{ route('operations.verification') }}">Verification</a>
-                        <a href="{{ route('operations.disposals') }}">Disposals</a>
-                        <a href="{{ route('operations.maintenance') }}">Maintenance</a>
-                        <a href="{{ route('operations.notifications') }}">Notifications</a>
-                        <a href="{{ route('operations.people') }}">Employee assets</a>
-                    </nav>
-                @elseif ($section !== 'my-requests' && auth()->user()->role?->slug === 'department_manager')
-                    <nav class="management-tabs" aria-label="Department operations pages"><a href="{{ route('operations.assignments') }}">Assignments</a><a href="{{ route('operations.returns') }}">Returns</a><a href="{{ route('operations.transfers') }}">Transfers</a><a href="{{ route('operations.status') }}">Status</a><a href="{{ route('operations.requests') }}">Requests</a><a href="{{ route('operations.reports') }}">Reports</a><a href="{{ route('operations.history') }}">History</a></nav>
-                @elseif ($section !== 'my-requests' && auth()->user()->role?->slug === 'it_technician')
-                    <nav class="management-tabs" aria-label="IT operations pages"><a href="{{ route('operations.maintenance') }}">Maintenance</a><a href="{{ route('operations.status') }}">Status</a><a href="{{ route('operations.history') }}">History</a></nav>
-                @endif
-
                 @if ($section === 'assignments')
                     <section class="management-section">
                         <div class="management-section-heading"><div><h2>Assign an available asset</h2><p>Only assets marked Available can be assigned.</p></div></div>

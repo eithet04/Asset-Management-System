@@ -23,6 +23,16 @@ const employeeRequestCount = document.querySelector('#employee-request-count');
 const employeeAssetModal = document.querySelector('#employee-asset-modal');
 const employeeIssueModal = document.querySelector('#employee-issue-modal');
 const resendForm = document.querySelector('[data-resend-form]');
+const mainNav = document.querySelector('.main-nav');
+const sidebarScrollStorageKey = 'axora-sidebar-scroll-position';
+
+if (mainNav) {
+    const savedScrollPosition = sessionStorage.getItem(sidebarScrollStorageKey);
+    if (savedScrollPosition !== null) {
+        mainNav.scrollTop = Number(savedScrollPosition);
+        sessionStorage.removeItem(sidebarScrollStorageKey);
+    }
+}
 
 document.querySelectorAll('[data-password-toggle]').forEach((button) => {
     button.addEventListener('click', () => {
@@ -206,9 +216,17 @@ document.querySelector('.menu-toggle')?.addEventListener('click', (event) => {
 });
 
 document.querySelectorAll('.nav-link').forEach((link) => {
-    link.addEventListener('click', () => {
+    link.addEventListener('click', (event) => {
         if (link.dataset.openEmployeeModal) {
             openEmployeeModal(link.dataset.openEmployeeModal);
+        }
+
+        const destination = new URL(link.href, window.location.href);
+        const isSamePage = destination.origin === window.location.origin
+            && destination.pathname === window.location.pathname
+            && destination.search === window.location.search;
+        if (mainNav && !isSamePage && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) {
+            sessionStorage.setItem(sidebarScrollStorageKey, String(mainNav.scrollTop));
         }
 
         document.querySelector('.nav-link.active')?.classList.remove('active');

@@ -168,16 +168,6 @@
                     </div>
                 @endif
 
-                <nav class="management-tabs" aria-label="Management sections">
-                    <a @if ($section === 'categories') aria-current="page" @endif href="{{ route('admin.categories') }}">Categories</a>
-                    <a @if ($section === 'locations') aria-current="page" @endif href="{{ route('admin.locations') }}">Locations</a>
-                    <a @if ($section === 'branches') aria-current="page" @endif href="{{ route('admin.branches') }}">Branches</a>
-                    <a @if ($section === 'departments') aria-current="page" @endif href="{{ route('admin.departments') }}">Departments</a>
-                    <a @if ($section === 'users') aria-current="page" @endif href="{{ route('admin.users') }}">User roles</a>
-                    <a @if ($section === 'maintenance') aria-current="page" @endif href="{{ route('admin.maintenance') }}">Maintenance</a>
-                    <a @if ($section === 'settings') aria-current="page" @endif href="{{ route('admin.settings') }}">Settings</a>
-                </nav>
-
                 @if ($section === 'categories')
                 <section class="management-section" id="categories">
                     <div class="management-section-heading"><div><p class="eyebrow">ASSET TYPES</p><h2>Categories</h2><p>Keep existing asset history by deactivating categories instead of deleting them.</p></div></div>
