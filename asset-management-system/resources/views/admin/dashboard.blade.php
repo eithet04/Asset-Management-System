@@ -56,10 +56,6 @@
                     <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     <span>Maintenance requests</span>
                 </a>
-                <a class="nav-link" href="{{ route('operations.notifications') }}">
-                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    <span>Notifications</span><span class="nav-count">{{ auth()->user()->unreadNotifications()->count() }}</span>
-                </a>
                 <div class="sidebar-section-label sidebar-section-spaced">MANAGE</div>
                 <a class="nav-link" href="{{ route('admin.categories') }}">
                     <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="m3 12 9 5 9-5M3 16l9 5 9-5" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
@@ -134,10 +130,7 @@
                         <button class="icon-button help-button" type="button" aria-label="Help">
                             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3m0 4h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
                         </button>
-                        <button class="icon-button notification-button" type="button" aria-label="Notifications">
-                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                            <span class="notification-dot"></span>
-                        </button>
+                        @include('components.theme-toggle')
                         <div class="topbar-divider"></div>
                         <div class="user-profile-trigger">
                             <div class="user-info">
@@ -238,15 +231,32 @@
                                     </select>
                                 </label>
                                 <button class="button button-secondary" type="submit">Search</button>
-                                <button class="button button-secondary export-button" type="button" id="export-assets">
+                                <a class="button button-secondary export-button" id="export-assets" href="{{ route('admin.assets.export', $filters) }}">
                                     <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 16v4h14v-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
                                     Export
-                                </button>
+                                </a>
                             </div>
                         </form>
+                        <form class="asset-import-form" method="POST" action="{{ route('admin.assets.import') }}" enctype="multipart/form-data">
+                            @csrf
+                            <label class="form-field">Import asset CSV
+                                <input name="csv_file" type="file" accept=".csv,text/csv" required>
+                            </label>
+                            <p class="asset-import-hint">Use columns: Asset, Asset code, Category, Serial number, Location, Purchase Date, Purchase Cost, Warranty expiry, Condition, Status. Dates: YYYY-MM-DD. Leave optional values blank. Assigned assets must use the assignment workflow.</p>
+                            <button class="button button-secondary" type="submit">Import CSV</button>
+                        </form>
+                        @if ($errors->import->any())
+                            <div class="management-alert management-alert-error" role="alert">
+                                <ul>
+                                    @foreach ($errors->import->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
                         <div class="table-scroll">
                             <table class="asset-table">
-                                <thead><tr><th scope="col">Asset</th><th scope="col">Category</th><th scope="col">Serial number</th><th scope="col">Assigned to</th><th scope="col">Status</th><th scope="col">Actions</th></tr></thead>
+                                <thead><tr><th scope="col">Asset</th><th scope="col">Category</th><th scope="col">Serial number</th><th scope="col">Location</th><th scope="col">Purchase date</th><th scope="col">Purchase cost</th><th scope="col">Warranty expiry</th><th scope="col">Condition</th><th scope="col">Assigned to</th><th scope="col">Status</th><th scope="col">Actions</th></tr></thead>
                                 <tbody id="asset-table-body">
                                     @foreach ($assets as $asset)
                                         @php
@@ -263,6 +273,11 @@
                                             <td><div class="asset-name"><span class="device-icon device-laptop">▣</span><span><strong>{{ $asset->name }}</strong><small>{{ $asset->asset_code }}</small></span></div></td>
                                             <td>{{ $asset->category->name }}</td>
                                             <td class="serial-cell">{{ $asset->serial_number ?: '—' }}</td>
+                                            <td>{{ $asset->location?->name ?? '—' }}</td>
+                                            <td>{{ $asset->purchase_date?->format('M j, Y') ?? '—' }}</td>
+                                            <td>{{ $asset->purchase_cost !== null ? number_format((float) $asset->purchase_cost, 2) : '—' }}</td>
+                                            <td>{{ $asset->warranty_expiry_date?->format('M j, Y') ?? '—' }}</td>
+                                            <td>{{ str($asset->condition)->title() }}</td>
                                             <td>
                                                 @if ($asset->currentEmployee)
                                                     {{ $asset->currentEmployee->first_name }} {{ $asset->currentEmployee->last_name }}
@@ -283,14 +298,11 @@
                                                 data-location-active="{{ $asset->location?->is_active ? 'true' : 'false' }}"
                                                 data-asset-code="{{ $asset->asset_code }}"
                                                 data-serial-number="{{ $asset->serial_number }}"
-                                                data-brand="{{ $asset->brand }}"
-                                                data-model="{{ $asset->model }}"
                                                 data-purchase-date="{{ $asset->purchase_date?->format('Y-m-d') }}"
                                                 data-purchase-cost="{{ $asset->purchase_cost }}"
                                                 data-warranty-expiry-date="{{ $asset->warranty_expiry_date?->format('Y-m-d') }}"
                                                 data-condition="{{ $asset->condition }}"
-                                                data-status="{{ $asset->status }}"
-                                                data-description="{{ $asset->description }}">Edit</button></td>
+                                                data-status="{{ $asset->status }}">Edit</button></td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -327,7 +339,6 @@
                 </div>
                 @error('serial_number')<p class="form-error">{{ $message }}</p>@enderror
                 @error('location_id')<p class="form-error">{{ $message }}</p>@enderror
-                <div class="form-row"><label class="form-field">Brand<input name="brand" value="{{ old('brand') }}" maxlength="255"></label><label class="form-field">Model<input name="model" value="{{ old('model') }}" maxlength="255"></label></div>
                 <div class="form-row"><label class="form-field">Purchase date<input name="purchase_date" type="date" value="{{ old('purchase_date') }}"></label><label class="form-field">Purchase cost<input name="purchase_cost" type="number" min="0" step="0.01" value="{{ old('purchase_cost') }}"></label></div>
                 <div class="form-row">
                     <label class="form-field">Warranty expiry<input name="warranty_expiry_date" type="date" value="{{ old('warranty_expiry_date') }}"></label>
@@ -335,10 +346,9 @@
                 </div>
                 <div class="form-row">
                     <label class="form-field" data-status-field>Status<select name="status" required><option value="available" @selected(old('status', 'available') === 'available')>Available</option><option value="assigned" disabled>Assigned</option><option value="under_maintenance" @selected(old('status') === 'under_maintenance')>Under maintenance</option><option value="damaged" @selected(old('status') === 'damaged')>Damaged</option><option value="disposed" @selected(old('status') === 'disposed')>Disposed</option></select></label>
-                    <label class="form-field">Description<input name="description" value="{{ old('description') }}" maxlength="5000"></label>
                 </div>
                 <p class="modal-description" data-status-note hidden>Asset status is managed in the Status &amp; condition section to preserve assignment and maintenance records.</p>
-                @foreach (['purchase_date', 'purchase_cost', 'warranty_expiry_date', 'condition', 'status', 'description'] as $field)
+                @foreach (['purchase_date', 'purchase_cost', 'warranty_expiry_date', 'condition', 'status'] as $field)
                     @error($field)<p class="form-error">{{ $message }}</p>@enderror
                 @endforeach
                 <div class="modal-actions"><button class="button button-secondary" type="button" data-close-modal>Cancel</button><button class="button button-primary" type="submit" data-submit-label>Add asset</button></div>

@@ -2,17 +2,22 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\Assets\ImportAssetsFromCsv;
+use App\Actions\Assets\RegisterAsset;
 use App\Http\Controllers\Controller;
 use App\Models\Asset;
 use App\Models\AssetActivity;
-use App\Models\AssetStatusHistory;
 use App\Models\Category;
 use App\Models\Location;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use RuntimeException;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AssetController extends Controller
 {
@@ -29,17 +34,10 @@ class AssetController extends Controller
             ])],
         ]);
 
-        $assets = Asset::query()
-            ->with(['category', 'location', 'currentEmployee'])
-            ->when($validated['q'] ?? null, function ($query, string $search): void {
-                $query->where(function ($query) use ($search): void {
-                    $query->where('asset_code', 'like', "%{$search}%")
-                        ->orWhere('name', 'like', "%{$search}%")
-                        ->orWhere('serial_number', 'like', "%{$search}%")
-                        ->orWhereHas('category', fn ($query) => $query->where('name', 'like', "%{$search}%"));
-                });
-            })
-            ->when($validated['status'] ?? null, fn ($query, string $status) => $query->where('status', $status))
+        $assets = $this->applyAssetFilters(
+            Asset::query()->with(['category', 'location', 'currentEmployee']),
+            $validated,
+        )
             ->latest()
             ->paginate(10)
             ->withQueryString();
@@ -72,52 +70,97 @@ class AssetController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, RegisterAsset $registerAsset): RedirectResponse
     {
         $validated = $request->validate([
             'asset_code' => ['required', 'string', 'max:255', 'unique:assets,asset_code'],
             'name' => ['required', 'string', 'max:255'],
             'category_id' => ['required', Rule::exists('categories', 'id')->where('is_active', true)],
             'location_id' => ['nullable', Rule::exists('locations', 'id')->where('is_active', true)],
-            'brand' => ['nullable', 'string', 'max:255'],
-            'model' => ['nullable', 'string', 'max:255'],
             'serial_number' => ['nullable', 'string', 'max:255', 'unique:assets,serial_number'],
             'purchase_date' => ['nullable', 'date'],
             'purchase_cost' => ['nullable', 'numeric', 'min:0'],
             'warranty_expiry_date' => ['nullable', 'date'],
             'condition' => ['required', Rule::in(['good', 'fair', 'poor'])],
             'status' => ['required', Rule::in(['available', 'under_maintenance', 'damaged', 'disposed'])],
-            'description' => ['nullable', 'string', 'max:5000'],
         ]);
 
-        DB::transaction(function () use ($validated, $request): void {
-            $asset = Asset::query()->create([
-                ...$validated,
-                'created_by' => $request->user()->id,
-                'updated_by' => $request->user()->id,
-            ]);
-
-            AssetActivity::query()->create([
-                'asset_id' => $asset->id,
-                'user_id' => $request->user()->id,
-                'action_type' => 'registered',
-                'description' => "Registered asset {$asset->asset_code}.",
-                'details' => ['asset_code' => $asset->asset_code, 'status' => $asset->status],
-                'occurred_at' => now(),
-            ]);
-
-            AssetStatusHistory::query()->create([
-                'asset_id' => $asset->id,
-                'changed_by_user_id' => $request->user()->id,
-                'new_status' => $asset->status,
-                'new_condition' => $asset->condition,
-                'changed_at' => now(),
-                'remarks' => 'Initial asset registration.',
-            ]);
+        DB::transaction(function () use ($validated, $request, $registerAsset): void {
+            $registerAsset->handle($validated, $request->user()->id);
         });
 
         return to_route('admin.dashboard')
             ->with('status', 'Asset added to the registry.');
+    }
+
+    public function import(Request $request, ImportAssetsFromCsv $importAssets): RedirectResponse
+    {
+        $validated = $request->validateWithBag('import', [
+            'csv_file' => ['required', 'file', 'mimes:csv,txt', 'extensions:csv', 'max:10240'],
+        ]);
+        $importedCount = $importAssets->handle($validated['csv_file'], $request->user()->id);
+
+        return to_route('admin.dashboard')
+            ->with('status', "Imported {$importedCount} assets from CSV.");
+    }
+
+    public function export(Request $request): StreamedResponse
+    {
+        $validated = $request->validate([
+            'q' => ['nullable', 'string', 'max:255'],
+            'status' => ['nullable', Rule::in([
+                'available',
+                'assigned',
+                'under_maintenance',
+                'damaged',
+                'disposed',
+            ])],
+        ]);
+        $assets = $this->applyAssetFilters(
+            Asset::query()->with(['category', 'location']),
+            $validated,
+        )->lazyById(500);
+
+        return response()->streamDownload(function () use ($assets): void {
+            $stream = fopen('php://output', 'wb');
+
+            if ($stream === false) {
+                throw new RuntimeException('Unable to open the CSV output stream.');
+            }
+
+            try {
+                fwrite($stream, "\xEF\xBB\xBF");
+                fputcsv($stream, [
+                    'Asset',
+                    'Asset code',
+                    'Category',
+                    'Serial number',
+                    'Location',
+                    'Purchase Date',
+                    'Purchase Cost',
+                    'Warranty expiry',
+                    'Condition',
+                    'Status',
+                ], ',', '"', '');
+
+                foreach ($assets as $asset) {
+                    fputcsv($stream, [
+                        $this->spreadsheetSafeCsvValue($asset->name),
+                        $this->spreadsheetSafeCsvValue($asset->asset_code),
+                        $this->spreadsheetSafeCsvValue($asset->category?->name),
+                        $this->spreadsheetSafeCsvValue($asset->serial_number),
+                        $this->spreadsheetSafeCsvValue($asset->location?->name),
+                        $this->spreadsheetSafeCsvValue($asset->purchase_date?->format('Y-m-d')),
+                        $this->spreadsheetSafeCsvValue($asset->purchase_cost),
+                        $this->spreadsheetSafeCsvValue($asset->warranty_expiry_date?->format('Y-m-d')),
+                        $this->spreadsheetSafeCsvValue(Str::headline($asset->condition)),
+                        $this->spreadsheetSafeCsvValue(Str::headline($asset->status)),
+                    ], ',', '"', '');
+                }
+            } finally {
+                fclose($stream);
+            }
+        }, 'asset-registry.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
     public function update(Request $request, Asset $asset): RedirectResponse
@@ -132,13 +175,10 @@ class AssetController extends Controller
             )],
             'asset_code' => ['required', 'string', 'max:255', Rule::unique('assets', 'asset_code')->ignore($asset->id)],
             'serial_number' => ['nullable', 'string', 'max:255', Rule::unique('assets', 'serial_number')->ignore($asset->id)],
-            'brand' => ['nullable', 'string', 'max:255'],
-            'model' => ['nullable', 'string', 'max:255'],
             'purchase_date' => ['nullable', 'date'],
             'purchase_cost' => ['nullable', 'numeric', 'min:0'],
             'warranty_expiry_date' => ['nullable', 'date'],
             'condition' => ['required', Rule::in(['good', 'fair', 'poor'])],
-            'description' => ['nullable', 'string', 'max:5000'],
         ]);
 
         DB::transaction(function () use ($validated, $request, $asset): void {
@@ -164,5 +204,29 @@ class AssetController extends Controller
 
         return to_route('admin.dashboard')
             ->with('status', 'Asset details updated.');
+    }
+
+    /**
+     * @param  array{q?: string|null, status?: string|null}  $filters
+     */
+    private function applyAssetFilters(Builder $query, array $filters): Builder
+    {
+        return $query
+            ->when($filters['q'] ?? null, function (Builder $query, string $search): void {
+                $query->where(function (Builder $query) use ($search): void {
+                    $query->where('asset_code', 'like', "%{$search}%")
+                        ->orWhere('name', 'like', "%{$search}%")
+                        ->orWhere('serial_number', 'like', "%{$search}%")
+                        ->orWhereHas('category', fn (Builder $query) => $query->where('name', 'like', "%{$search}%"));
+                });
+            })
+            ->when($filters['status'] ?? null, fn (Builder $query, string $status) => $query->where('status', $status));
+    }
+
+    private function spreadsheetSafeCsvValue(?string $value): string
+    {
+        $value ??= '';
+
+        return preg_match('/^[\t\r ]*[=+\-@]/', $value) === 1 ? "'".$value : $value;
     }
 }

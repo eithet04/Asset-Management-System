@@ -43,6 +43,8 @@ Route::post('/logout', [AuthenticationController::class, 'destroy'])
 
 Route::middleware(['auth', 'role:admin'])->group(function (): void {
     Route::get('/admin', [AssetController::class, 'index'])->name('admin.dashboard');
+    Route::get('/admin/assets/export', [AssetController::class, 'export'])->name('admin.assets.export');
+    Route::post('/admin/assets/import', [AssetController::class, 'import'])->name('admin.assets.import');
     Route::post('/admin/assets', [AssetController::class, 'store'])->name('admin.assets.store');
     Route::put('/admin/assets/{asset}', [AssetController::class, 'update'])->name('admin.assets.update');
     Route::get('/admin/management', fn () => to_route('admin.categories'))->name('admin.management');

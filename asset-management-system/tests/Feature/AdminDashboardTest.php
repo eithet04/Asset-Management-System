@@ -5,9 +5,11 @@ namespace Tests\Feature;
 use App\Models\Asset;
 use App\Models\AssetActivity;
 use App\Models\Category;
+use App\Models\Location;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
 
 class AdminDashboardTest extends TestCase
@@ -27,6 +29,14 @@ class AdminDashboardTest extends TestCase
         $response->assertSee(route('admin.categories'));
         $response->assertSee(route('admin.locations'));
         $response->assertSeeText('MANAGE');
+        $response->assertDontSee('name="brand"', false);
+        $response->assertDontSee('name="model"', false);
+        $response->assertDontSee('name="description"', false);
+        $response->assertSeeText('Location');
+        $response->assertSeeText('Purchase date');
+        $response->assertSeeText('Purchase cost');
+        $response->assertSeeText('Warranty expiry');
+        $response->assertSeeText('Condition');
     }
 
     public function test_dashboard_greeting_uses_yangon_local_time(): void
@@ -189,6 +199,7 @@ class AdminDashboardTest extends TestCase
             'name' => 'Old laptop name',
             'condition' => 'good',
             'status' => 'available',
+            'description' => 'Legacy description',
         ]);
 
         $this->actingAs($admin)
@@ -198,7 +209,6 @@ class AdminDashboardTest extends TestCase
                 'name' => 'Updated laptop name',
                 'category_id' => $category->id,
                 'condition' => 'fair',
-                'description' => 'Updated from the dashboard.',
             ])
             ->assertRedirect(route('admin.dashboard'))
             ->assertSessionHas('status', 'Asset details updated.');
@@ -207,7 +217,7 @@ class AdminDashboardTest extends TestCase
             'id' => $asset->id,
             'name' => 'Updated laptop name',
             'condition' => 'fair',
-            'description' => 'Updated from the dashboard.',
+            'description' => 'Legacy description',
             'updated_by' => $admin->id,
         ]);
         $this->assertDatabaseHas('asset_activities', [
@@ -250,6 +260,250 @@ class AdminDashboardTest extends TestCase
         $this->actingAs($employee)
             ->post(route('admin.assets.store'))
             ->assertForbidden();
+    }
+
+    public function test_admin_can_import_assets_from_csv_and_records_registration_history(): void
+    {
+        $admin = $this->createUserWithRole(User::ROLE_ADMIN);
+        $category = Category::query()->create([
+            'code' => 'LAPTOP',
+            'name' => 'Laptop',
+        ]);
+        $location = Location::query()->create([
+            'code' => 'HQ',
+            'name' => 'Head Office',
+        ]);
+        $file = UploadedFile::fake()->createWithContent('assets.csv', implode("\r\n", [
+            'Asset,Asset code,Category,Serial number,Location,Purchase Date,Purchase Cost,Warranty expiry,Condition,Status',
+            'Lenovo IDEAPAD Slim 1,AST-1001,Laptop,SN-111111,Head Office,2025-03-05,500.50,2027-03-05,Good,Available',
+            'Office laptop,AST-1002,LAPTOP,,,,650,2028-04-06,Fair,Under maintenance',
+        ]));
+
+        $response = $this->actingAs($admin)->post(route('admin.assets.import'), ['csv_file' => $file]);
+
+        $response->assertRedirect(route('admin.dashboard'))
+            ->assertSessionHas('status', 'Imported 2 assets from CSV.');
+        $this->assertDatabaseHas('assets', [
+            'asset_code' => 'AST-1001',
+            'name' => 'Lenovo IDEAPAD Slim 1',
+            'category_id' => $category->id,
+            'location_id' => $location->id,
+            'serial_number' => 'SN-111111',
+            'condition' => 'good',
+            'status' => 'available',
+            'created_by' => $admin->id,
+        ]);
+        $this->assertDatabaseHas('assets', [
+            'asset_code' => 'AST-1002',
+            'category_id' => $category->id,
+            'location_id' => null,
+            'serial_number' => null,
+            'condition' => 'fair',
+            'status' => 'under_maintenance',
+        ]);
+        $firstImportedAsset = Asset::query()->where('asset_code', 'AST-1001')->firstOrFail();
+        $secondImportedAsset = Asset::query()->where('asset_code', 'AST-1002')->firstOrFail();
+        $this->assertSame('2025-03-05', $firstImportedAsset->purchase_date->format('Y-m-d'));
+        $this->assertSame('500.50', $firstImportedAsset->purchase_cost);
+        $this->assertSame('2027-03-05', $firstImportedAsset->warranty_expiry_date->format('Y-m-d'));
+        $this->assertNull($secondImportedAsset->location_id);
+        $this->assertNull($secondImportedAsset->purchase_date);
+        $this->assertSame('650.00', $secondImportedAsset->purchase_cost);
+        $this->assertSame('2028-04-06', $secondImportedAsset->warranty_expiry_date->format('Y-m-d'));
+        $this->assertDatabaseCount('asset_activities', 2);
+        $this->assertDatabaseCount('asset_status_histories', 2);
+
+        $this->actingAs($admin)
+            ->get(route('admin.dashboard'))
+            ->assertOk()
+            ->assertSeeText('Head Office')
+            ->assertSeeText('Mar 5, 2025')
+            ->assertSeeText('500.50')
+            ->assertSeeText('Mar 5, 2027')
+            ->assertSeeText('Good');
+    }
+
+    public function test_csv_import_rejects_duplicate_codes_and_assigned_assets_without_partial_import(): void
+    {
+        $admin = $this->createUserWithRole(User::ROLE_ADMIN);
+        $category = Category::query()->create([
+            'code' => 'LAPTOP',
+            'name' => 'Laptop',
+        ]);
+        Asset::query()->create([
+            'category_id' => $category->id,
+            'asset_code' => 'AST-EXISTING',
+            'name' => 'Existing laptop',
+            'condition' => 'good',
+            'status' => 'available',
+        ]);
+        $file = UploadedFile::fake()->createWithContent('assets.csv', implode("\r\n", [
+            'Asset,Asset code,Category,Serial number,Location,Purchase Date,Purchase Cost,Warranty expiry,Condition,Status',
+            'New laptop,AST-NEW,Laptop,SN-NEW,,2025-01-01,200,2026-01-01,Good,Available',
+            'Existing laptop,AST-EXISTING,Laptop,SN-EXISTING,,2025-01-01,200,2026-01-01,Good,Assigned',
+        ]));
+
+        $response = $this->followingRedirects()
+            ->actingAs($admin)
+            ->from(route('admin.dashboard'))
+            ->post(route('admin.assets.import'), ['csv_file' => $file]);
+
+        $response->assertOk()
+            ->assertSeeText('Row 3: Assigned assets must be registered through the assignment workflow.')
+            ->assertSeeText("Row 3: Asset code 'AST-EXISTING' already exists.");
+        $this->assertDatabaseMissing('assets', ['asset_code' => 'AST-NEW']);
+        $this->assertDatabaseCount('assets', 1);
+        $this->assertDatabaseCount('asset_activities', 0);
+    }
+
+    public function test_csv_import_rejects_invalid_purchase_cost_and_condition(): void
+    {
+        $admin = $this->createUserWithRole(User::ROLE_ADMIN);
+        Category::query()->create([
+            'code' => 'LAPTOP',
+            'name' => 'Laptop',
+        ]);
+        $file = UploadedFile::fake()->createWithContent('assets.csv', implode("\r\n", [
+            'Asset,Asset code,Category,Serial number,Location,Purchase Date,Purchase Cost,Warranty expiry,Condition,Status',
+            'Faulty laptop,AST-BAD-DATA,Laptop,SN-BAD-DATA,,not-a-date,-20,not-a-date,Excellent,Available',
+        ]));
+
+        $response = $this->followingRedirects()
+            ->actingAs($admin)
+            ->from(route('admin.dashboard'))
+            ->post(route('admin.assets.import'), ['csv_file' => $file]);
+
+        $response->assertOk()
+            ->assertSeeText('Row 2: The Purchase date field must be a valid date.')
+            ->assertSeeText('Row 2: The Purchase cost field must be at least 0.')
+            ->assertSeeText('Row 2: The Warranty expiry field must be a valid date.')
+            ->assertSeeText('Row 2: The selected Condition is invalid.');
+        $this->assertDatabaseMissing('assets', ['asset_code' => 'AST-BAD-DATA']);
+        $this->assertDatabaseCount('asset_activities', 0);
+    }
+
+    public function test_csv_import_rejects_an_unknown_location(): void
+    {
+        $admin = $this->createUserWithRole(User::ROLE_ADMIN);
+        Category::query()->create([
+            'code' => 'LAPTOP',
+            'name' => 'Laptop',
+        ]);
+        $file = UploadedFile::fake()->createWithContent('assets.csv', implode("\r\n", [
+            'Asset,Asset code,Category,Serial number,Location,Purchase Date,Purchase Cost,Warranty expiry,Condition,Status',
+            'Unknown site laptop,AST-UNKNOWN-LOCATION,Laptop,SN-UNKNOWN,Unknown Site,2025-03-05,500,2027-03-05,Good,Available',
+        ]));
+
+        $response = $this->followingRedirects()
+            ->actingAs($admin)
+            ->from(route('admin.dashboard'))
+            ->post(route('admin.assets.import'), ['csv_file' => $file]);
+
+        $response->assertOk()
+            ->assertSeeText("Row 2: Location 'Unknown Site' was not found, is inactive, or is ambiguous.");
+        $this->assertDatabaseMissing('assets', ['asset_code' => 'AST-UNKNOWN-LOCATION']);
+        $this->assertDatabaseCount('asset_activities', 0);
+    }
+
+    public function test_non_admin_cannot_import_assets_from_csv(): void
+    {
+        $employee = $this->createUserWithRole(User::ROLE_EMPLOYEE);
+
+        $this->actingAs($employee)
+            ->post(route('admin.assets.import'))
+            ->assertForbidden();
+    }
+
+    public function test_asset_export_downloads_all_rows_with_the_registry_csv_columns(): void
+    {
+        $admin = $this->createUserWithRole(User::ROLE_ADMIN);
+        $category = Category::query()->create([
+            'code' => 'LAPTOP',
+            'name' => 'Laptop',
+        ]);
+        $location = Location::query()->create([
+            'code' => 'HQ',
+            'name' => 'Head Office',
+        ]);
+
+        for ($index = 1; $index <= 11; $index++) {
+            Asset::query()->create([
+                'category_id' => $category->id,
+                'location_id' => $index === 1 ? $location->id : null,
+                'asset_code' => 'AST-EXPORT-'.$index,
+                'name' => $index === 1 ? '=HYPERLINK("https://example.test")' : 'Laptop '.$index,
+                'serial_number' => 'SN-EXPORT-'.$index,
+                'purchase_date' => '2025-01-02',
+                'purchase_cost' => '1200.50',
+                'warranty_expiry_date' => '2027-01-02',
+                'condition' => 'fair',
+                'status' => 'available',
+            ]);
+        }
+
+        $response = $this->actingAs($admin)->get(route('admin.assets.export'));
+
+        $response->assertOk()
+            ->assertHeader('content-type', 'text/csv; charset=UTF-8')
+            ->assertHeader('content-disposition', 'attachment; filename=asset-registry.csv');
+        $csvLines = explode("\n", substr($response->streamedContent(), 3));
+        $csvRows = array_map(static fn (string $line): array => str_getcsv($line), array_filter($csvLines));
+
+        $this->assertSame([
+            'Asset',
+            'Asset code',
+            'Category',
+            'Serial number',
+            'Location',
+            'Purchase Date',
+            'Purchase Cost',
+            'Warranty expiry',
+            'Condition',
+            'Status',
+        ], $csvRows[0]);
+        $this->assertCount(12, $csvRows);
+        $this->assertSame("'=HYPERLINK(\"https://example.test\")", $csvRows[1][0]);
+        $this->assertSame('Head Office', $csvRows[1][4]);
+        $this->assertSame('2025-01-02', $csvRows[1][5]);
+        $this->assertSame('1200.50', $csvRows[1][6]);
+        $this->assertSame('2027-01-02', $csvRows[1][7]);
+        $this->assertSame('Fair', $csvRows[1][8]);
+    }
+
+    public function test_asset_export_applies_dashboard_search_and_status_filters(): void
+    {
+        $admin = $this->createUserWithRole(User::ROLE_ADMIN);
+        $category = Category::query()->create([
+            'code' => 'LAPTOP',
+            'name' => 'Laptop',
+        ]);
+        Asset::query()->create([
+            'category_id' => $category->id,
+            'asset_code' => 'AST-MATCH',
+            'name' => 'Filtered laptop',
+            'condition' => 'good',
+            'status' => 'available',
+        ]);
+        Asset::query()->create([
+            'category_id' => $category->id,
+            'asset_code' => 'AST-OTHER',
+            'name' => 'Filtered laptop damaged',
+            'condition' => 'good',
+            'status' => 'damaged',
+        ]);
+
+        $response = $this->actingAs($admin)->get(route('admin.assets.export', [
+            'q' => 'AST-MATCH',
+            'status' => 'available',
+        ]));
+
+        $response->assertOk();
+        $csvRows = array_map(
+            static fn (string $line): array => str_getcsv($line),
+            array_filter(explode("\n", substr($response->streamedContent(), 3))),
+        );
+        $this->assertCount(2, $csvRows);
+        $this->assertSame('AST-MATCH', $csvRows[1][1]);
     }
 
     private function createUserWithRole(string $slug): User

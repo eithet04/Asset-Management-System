@@ -25,6 +25,30 @@ const employeeIssueModal = document.querySelector('#employee-issue-modal');
 const resendForm = document.querySelector('[data-resend-form]');
 const mainNav = document.querySelector('.main-nav');
 const sidebarScrollStorageKey = 'axora-sidebar-scroll-position';
+const themeToggle = document.querySelector('[data-theme-toggle]');
+
+if (themeToggle) {
+    const themeStorageKey = 'axora-theme';
+    const savedTheme = localStorage.getItem(themeStorageKey);
+    const activeTheme = savedTheme === 'dark' ? 'dark' : 'light';
+
+    function setTheme(theme) {
+        const isDark = theme === 'dark';
+
+        document.documentElement.dataset.theme = theme;
+        themeToggle.setAttribute('aria-label', `Switch to ${isDark ? 'light' : 'dark'} mode`);
+        themeToggle.setAttribute('aria-pressed', String(isDark));
+        themeToggle.title = `Switch to ${isDark ? 'light' : 'dark'} mode`;
+    }
+
+    setTheme(activeTheme);
+    themeToggle.addEventListener('click', () => {
+        const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+
+        localStorage.setItem(themeStorageKey, nextTheme);
+        setTheme(nextTheme);
+    });
+}
 
 if (mainNav) {
     const savedScrollPosition = sessionStorage.getItem(sidebarScrollStorageKey);
@@ -241,28 +265,6 @@ document.querySelectorAll('.nav-link').forEach((link) => {
             filterAssignments();
         }
     });
-});
-
-document.querySelector('#export-assets')?.addEventListener('click', () => {
-    const rows = [...tableBody.querySelectorAll('tr:not([hidden])')];
-    const csvRows = [['Asset', 'Asset code', 'Category', 'Serial number', 'Status']];
-    rows.forEach((row) => {
-        const cells = row.querySelectorAll('td');
-        csvRows.push([
-            cells[0].querySelector('strong').textContent,
-            cells[0].querySelector('small').textContent,
-            cells[1].textContent,
-            cells[2].textContent,
-            cells[4].textContent.trim(),
-        ]);
-    });
-    const csv = csvRows.map((row) => row.map((value) => `"${value.replaceAll('"', '""')}"`).join(',')).join('\r\n');
-    const download = document.createElement('a');
-    download.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
-    download.download = 'asset-registry.csv';
-    download.click();
-    URL.revokeObjectURL(download.href);
-    showToast(`Exported ${rows.length} ${rows.length === 1 ? 'asset' : 'assets'} to CSV.`);
 });
 
 function filterAssignments() {
