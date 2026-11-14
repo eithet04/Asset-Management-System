@@ -242,7 +242,6 @@
                             <label class="form-field">Import asset CSV
                                 <input name="csv_file" type="file" accept=".csv,text/csv" required>
                             </label>
-                            <p class="asset-import-hint">Use columns: Asset, Asset code, Category, Serial number, Location, Purchase Date, Purchase Cost, Warranty expiry, Condition, Status. Dates: YYYY-MM-DD. Leave optional values blank. Assigned assets must use the assignment workflow.</p>
                             <button class="button button-secondary" type="submit">Import CSV</button>
                         </form>
                         @if ($errors->import->any())
